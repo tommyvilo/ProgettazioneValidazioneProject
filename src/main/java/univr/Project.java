@@ -1,9 +1,10 @@
-package it.univr;
+package univr;
 
-import it.univr.User.Supervisor;
+import univr.User.Supervisor;
 import jakarta.persistence.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Project {

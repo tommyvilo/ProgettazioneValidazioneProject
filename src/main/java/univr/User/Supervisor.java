@@ -1,6 +1,6 @@
-package it.univr.User;
+package univr.User;
 
-import it.univr.Project;
+import univr.Project;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,4 +1,4 @@
-package it.univr.User;
+package univr.User;
 
 import jakarta.persistence.*;
 

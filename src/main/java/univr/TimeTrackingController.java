@@ -1,14 +1,15 @@
-package it.univr;
-
-import it.univr.User.Administrator;
-import it.univr.User.Researcher;
-import it.univr.User.Supervisor;
-import it.univr.User.Utente;
+package univr;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import univr.User.Administrator;
+import univr.User.Researcher;
+import univr.User.Supervisor;
+import univr.User.Utente;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,14 +18,17 @@ import java.util.Arrays;
 public class TimeTrackingController {
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private ProjectRepository projectRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @RequestMapping("/")
-    public String login() {return "login";}
+    public String login() { return "login";}
 
-    /*
+    @RequestMapping("/index")
+    public String index() { return "index";}
+
+
     @PostConstruct
     public void init() {
         userRepository.save(new Researcher("nicozerman","zermaculo","Nicolò","Zerman","ZRMNCL02S19L781E"));
@@ -39,6 +43,24 @@ public class TimeTrackingController {
         //p1.setSupervisor((Supervisor) userRepository.findByUsername("tom"));
         //p1.setSupervisor((Supervisor) userRepository.findByUsername("tom"));
     }
+
+    @RequestMapping("/loginUser")
+    public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes) {
+
+        if (userRepository.existsByUsername(user)) {
+            Utente foundUser = userRepository.findByUsername(user);
+            if (foundUser != null && foundUser.getPassword().equals(psw)) {
+                return "redirect:/index";
+            }
+            redirectAttributes.addFlashAttribute("error", "Wrong password");
+        }
+        else {
+            redirectAttributes.addFlashAttribute("error", "User does not exist.");
+        }
+        return "redirect:/";
+    }
+
+
 
     @PostMapping("/print")
     public String print(){
@@ -55,28 +77,6 @@ public class TimeTrackingController {
         return "login";
     }
 
-    @PostMapping("/createSupervisor")
-    public Supervisor createSupervisor(@RequestBody Supervisor user) {
-        System.out.println(user);
-        return userRepository.save(user);
-    }
 
-    @PostMapping("/createResearcher")
-    public Researcher createResearcher(@RequestBody Researcher user) {
-        return userRepository.save(user);
-    }
-
-    @PostMapping("/createAdministrator")
-    public Administrator createAdministrator(@RequestBody Administrator user) {
-        return userRepository.save(user);
-    }
-
-    @PostMapping("/createProject")
-    public Project createResearcher(@RequestBody Project progetto) {
-        projectRepository.save(progetto);
-        return progetto;
-    }
-
-    */
 
 }

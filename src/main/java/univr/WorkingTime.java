@@ -1,4 +1,4 @@
-package it.univr;
+package univr;
 
 import jakarta.persistence.Embeddable;
 
