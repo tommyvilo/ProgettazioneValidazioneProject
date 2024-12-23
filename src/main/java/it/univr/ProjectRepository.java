@@ -1,6 +1,9 @@
 package it.univr;
+import it.univr.User.Researcher;
 import org.springframework.data.repository.CrudRepository;
 
-public interface ProjectRepository extends CrudRepository<User, Long>{
+import java.util.List;
 
- }
+public interface ProjectRepository extends CrudRepository<Project, Long>{
+    Iterable<Project> findProjectsByResearchersContains(Long researcher);
+}
