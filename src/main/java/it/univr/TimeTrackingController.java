@@ -1,5 +1,8 @@
 package it.univr;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,10 +26,28 @@ public class TimeTrackingController {
     private ProjectRepository projectRepository;
 
     @RequestMapping("/")
-    public String login() {return "login";}
+    public String login(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    cookie.setValue(null);  // Imposta il valore del cookie a null
+                    cookie.setMaxAge(0);    // Imposta l'età del cookie a 0 per eliminarlo
+                    cookie.setPath("/");    // Assicurati che il cookie venga rimosso per tutto il dominio
+                    response.addCookie(cookie);  // Aggiungi il cookie modificato nella risposta
+                }
+            }
+        }
+        return "login";}
 
     @RequestMapping("/index")
-    public String index() { return "index";}
+    public String index(HttpServletRequest request) {
+        if (isUserLoggedIn(request)) {
+            return "index";
+        } else {
+            return "redirect:/";
+        }
+    }
 
 
     @PostConstruct
@@ -65,10 +86,16 @@ public class TimeTrackingController {
     }
 
     @RequestMapping("/loginUser")
-    public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes) {
+    public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         if (userRepository.existsByUsername(user)) {
             Utente foundUser = userRepository.findByUsername(user);
             if (foundUser != null && foundUser.getPassword().equals(psw)) {
+                Cookie cookie = new Cookie("userLoggedIn", foundUser.getUsername());
+                cookie.setMaxAge(3600); // 1 ora di durata
+                cookie.setHttpOnly(true); // Proteggi il cookie
+                cookie.setPath("/"); // Il cookie è accessibile in tutto il dominio
+                response.addCookie(cookie);
+
                 return "redirect:/index";
             }
             redirectAttributes.addFlashAttribute("error", "Wrong password");
@@ -77,6 +104,19 @@ public class TimeTrackingController {
             redirectAttributes.addFlashAttribute("error", "User does not exist.");
         }
         return "redirect:/";
+    }
+
+
+    public boolean isUserLoggedIn(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    return true; // L'utente è loggato
+                }
+            }
+        }
+        return false; // L'utente non è loggato
     }
 
     /*@PostMapping("/createSupervisor")
