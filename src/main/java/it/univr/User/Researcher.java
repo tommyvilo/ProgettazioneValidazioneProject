@@ -1,14 +1,41 @@
 package it.univr.User;
 
+import it.univr.Project;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Researcher extends Utente {
+
+    @ManyToMany(mappedBy = "researchers", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Project> projects = new HashSet<>();
 
     protected Researcher() {
     }
 
     public Researcher(String username, String password, String name, String surname, String cf){
         super(username, password, name, surname, cf);
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void addProject(Project project){
+        this.projects.add(project);
+        project.addResearcher(this);
+    }
+
+    public String toString() {
+        return "Researcher: " + super.toString() + " Projects: " + projects.size();
     }
 }

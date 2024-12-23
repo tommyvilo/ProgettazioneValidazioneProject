@@ -24,20 +24,25 @@ public class TimeTrackingController {
     @RequestMapping("/")
     public String login() {return "login";}
 
-    /*
+
     @PostConstruct
     public void init() {
-        userRepository.save(new Researcher("nicozerman","zermaculo","Nicolò","Zerman","ZRMNCL02S19L781E"));
-        userRepository.save(new Supervisor("tom","tommyvilo","Tommaso","Vilotto","VLTTMS02B18F861N"));
-        userRepository.save(new Administrator("admin","admin","Gianfranco","Sulla Riva","GFTATS02B18F861N"));
-        Project p1 = new Project("Dux Mea Lux", "Fornite", "1F", "Univr", "97823", new ArrayList<>(Arrays.asList(1L)));
+        Researcher r1 = new Researcher("nicozerman","zermaculo","Nicolò","Zerman","ZRMNCL02S19L781E");
+        Supervisor s1 = new Supervisor("tom","tommyvilo","Tommaso","Vilotto","VLTTMS02B18F861N");
+        Administrator a1 = new Administrator("admin","admin","Gianfranco","Sulla Riva","GFTATS02B18F861N");
+
+        userRepository.save(r1);
+        userRepository.save(s1);
+        userRepository.save(a1);
+
+        Project p1 = new Project("Dux Mea Lux", "Fornite", "1F", "Univr", "97823");
         projectRepository.save(p1);
-        //System.out.println((Supervisor) userRepository.findByUsername("tom"));
-        Supervisor s1 = ((Supervisor) userRepository.findByUsername("tom"));
+
         s1.addProject(p1);
         userRepository.save(s1);
-        //p1.setSupervisor((Supervisor) userRepository.findByUsername("tom"));
-        //p1.setSupervisor((Supervisor) userRepository.findByUsername("tom"));
+
+        r1.addProject(p1);
+        userRepository.save(r1);
     }
 
     @PostMapping("/print")
@@ -55,7 +60,7 @@ public class TimeTrackingController {
         return "login";
     }
 
-    @PostMapping("/createSupervisor")
+    /*@PostMapping("/createSupervisor")
     public Supervisor createSupervisor(@RequestBody Supervisor user) {
         System.out.println(user);
         return userRepository.save(user);

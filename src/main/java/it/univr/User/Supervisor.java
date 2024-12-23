@@ -33,4 +33,8 @@ public class Supervisor extends Utente {
         projects.add(project);
         project.setSupervisor(this);
     }
+
+    public String toString() {
+        return "Supervisor: " + super.toString() + " Projects: " + projects.size();
+    }
 }

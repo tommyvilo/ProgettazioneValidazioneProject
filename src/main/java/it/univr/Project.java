@@ -1,5 +1,6 @@
 package it.univr;
 
+import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import jakarta.persistence.*;
 
@@ -19,24 +20,28 @@ public class Project {
     @JoinColumn(name= "id_supervisor")
     private Supervisor supervisor;
 
-    @ElementCollection
-    private List<Long> researchers = new ArrayList<>();
+    /*@ElementCollection
+    private List<Long> researchers = new ArrayList<>();*/
+
+    @ManyToMany
+    @JoinTable(
+            name = "project_researcher", // Nome della tabella di join
+            joinColumns = @JoinColumn(name = "id_researcher"), // Colonna di join per Student
+            inverseJoinColumns = @JoinColumn(name = "id_project") // Colonna di join per Course
+    )
+    private Set<Researcher> researchers = new HashSet<>();
 
     @ElementCollection
     private List<WorkingTime> workingTimes = new ArrayList<>();
 
     protected Project() {}
 
-    public Project(String title, String cup, String code, String denominazioneSoggetto, String cfSoggetto, List<Long> researchers) {
+    public Project(String title, String cup, String code, String denominazioneSoggetto, String cfSoggetto) {
         this.title = title;
         this.cup = cup;
         this.code = code;
         this.denominazioneSoggetto = denominazioneSoggetto;
         this.cfSoggetto = cfSoggetto;
-        //this.supervisor = supervisor;
-        for (Long id : researchers){
-            addResearcher(id);
-        }
     }
 
     public Long getId() {
@@ -63,7 +68,7 @@ public class Project {
         return cfSoggetto;
     }
 
-    public List<Long> getResearchers() {
+    public Set<Researcher> getResearchers() {
         return researchers;
     }
 
@@ -95,7 +100,7 @@ public class Project {
         this.cfSoggetto = CFsoggetto;
     }
 
-    public void setResearchers(List<Long> researchers) {
+    public void setResearchers(Set<Researcher> researchers) {
         this.researchers = researchers;
     }
 
@@ -121,7 +126,7 @@ public class Project {
                 '}';
     }
 
-    public void addResearcher(Long researcher) {
+    public void addResearcher(Researcher researcher) {
         researchers.add(researcher);
     }
 }
