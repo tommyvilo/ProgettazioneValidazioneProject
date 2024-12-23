@@ -1,14 +1,15 @@
 package it.univr;
-
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import it.univr.User.Administrator;
 import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,9 @@ public class TimeTrackingController {
 
     @RequestMapping("/")
     public String login() {return "login";}
+
+    @RequestMapping("/index")
+    public String index() { return "index";}
 
 
     @PostConstruct
@@ -58,6 +62,21 @@ public class TimeTrackingController {
             System.out.println(project);
         }
         return "login";
+    }
+
+    @RequestMapping("/loginUser")
+    public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes) {
+        if (userRepository.existsByUsername(user)) {
+            Utente foundUser = userRepository.findByUsername(user);
+            if (foundUser != null && foundUser.getPassword().equals(psw)) {
+                return "redirect:/index";
+            }
+            redirectAttributes.addFlashAttribute("error", "Wrong password");
+        }
+        else {
+            redirectAttributes.addFlashAttribute("error", "User does not exist.");
+        }
+        return "redirect:/";
     }
 
     /*@PostMapping("/createSupervisor")
