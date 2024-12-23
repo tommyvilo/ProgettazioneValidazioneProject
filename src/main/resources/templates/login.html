@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>First Spring-MVC Application</title>
+    <title>Login - MVC WEB Application</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <style>
         /* Impostazioni generali */
@@ -65,22 +65,18 @@
             color: #1a5276;
             text-decoration: underline;
         }
-
-        .error-message{
-            color: red;
-        }
     </style>
 </head>
 
 <body>
 <div class="login-form">
     <h1>Login</h1>
-    <div th:if="${error}" class="error-message" th:text="${error}"></div>
-    <form action="loginUser" method="post" >
-        <input type="text" id="username" name="user" placeholder="Username" required >
-        <input type="password" id="password" name="psw" placeholder="Password" required>
+    <form action="#" method="post" th:action="@{/login}" th:object="${user}">
+        <input type="text" id="username" name="username" placeholder="Username" required th:field="*{username}">
+        <input type="password" id="password" name="password" placeholder="Password" required th:field="*{password}">
         <button type="submit">Login</button>
     </form>
+    <a href="register" class="register-link">Don't have an account? Register here</a>
 </div>
 </body>
 </html>
