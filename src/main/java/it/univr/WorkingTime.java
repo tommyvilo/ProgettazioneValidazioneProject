@@ -3,6 +3,7 @@ package it.univr;
 import it.univr.User.Researcher;
 import jakarta.persistence.*;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
@@ -70,6 +71,12 @@ public class WorkingTime {
 
     public boolean isValidated(){
         return validated;
+    }
+
+    public String getMonth() {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy");
+        System.out.println(date);
+        return sdf.format(date);
     }
 
 

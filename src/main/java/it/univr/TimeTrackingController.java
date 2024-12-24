@@ -17,6 +17,7 @@ import it.univr.User.Utente;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 @Controller
 public class TimeTrackingController {
@@ -60,7 +61,7 @@ public class TimeTrackingController {
         userRepository.save(r14);
         userRepository.save(r15);
 
-        Supervisor s1 = new Supervisor("tom","tommyvilo","Tommaso","Vilotto","VLTTMS02B18F861N");
+        Supervisor s1 = new Supervisor("tom","tom","Tommaso","Vilotto","VLTTMS02B18F861N");
         Supervisor s2 = new Supervisor("mattia", "mattevino", "Mattia", "Vino", "VNTMTT01C25L591A");
         Supervisor s3 = new Supervisor("alessandra", "alesforza", "Alessandra", "Forza", "FRZLSN01S57B849P");
         Supervisor s4 = new Supervisor("davide", "davidevitali", "Davide", "Vitali", "VTLDVD01S43F031S");
@@ -121,6 +122,8 @@ public class TimeTrackingController {
         p5.addResearcher(r9);
         p5.addResearcher(r10);
         p5.addResearcher(r13);
+
+        p1.addResearcher(r15);
 
         projectRepository.save(p1);
         projectRepository.save(p2);
@@ -195,6 +198,42 @@ public class TimeTrackingController {
         model.addAttribute("username", cookie.getValue());
         return "downloadtimesheet";
     }
+
+    @RequestMapping("/validationtimesheet")
+    public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+        if(!isValidUrl("supervisor",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+
+        //forExample
+        Researcher r1 = (Researcher) userRepository.findByUsername("mot");
+        Researcher r2 = (Researcher) userRepository.findByUsername("nicozerman");
+        Project p1 = projectRepository.findByTitle("NeuroPlus");
+        WorkingTime t1 = new WorkingTime(r1,p1, new Date(124,10,1),6L,true);
+        WorkingTime t2 = new WorkingTime(r1,p1, new Date(124,11,1),6L,false);
+        WorkingTime t3 = new WorkingTime(r2,p1, new Date(124,11,1),6L,false);
+
+        //ipotizzando che quando supervisor valida, valida tutti i working time di un mese
+        //sarà necessario passare una lista di working time, uno per ogni primo del mese tipo, relativi ad un ricercatore, per far funzionare l'html
+        //serve anche passare una lista di tutti i ricercatori coinvolti
+        model.addAttribute("lista",new ArrayList<>(Arrays.asList(t1,t2,t3)));
+        model.addAttribute("researchers",new ArrayList<>(Arrays.asList(r1.getUsername(),r2.getUsername())));
+        model.addAttribute("username", cookie.getValue());
+        return "validationtimesheet";
+    }
+
+    @RequestMapping("/projectmanagement")
+    public String projectmanagement(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+        if(!isValidUrl("supervisor",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+
+        model.addAttribute("username", cookie.getValue());
+        return "projectmanagement";
+    }
+
 
     @RequestMapping("/administrator")
     public String administrator(HttpServletRequest request, Model model) {

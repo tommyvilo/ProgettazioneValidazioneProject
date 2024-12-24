@@ -37,11 +37,16 @@
             border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
-
         }
 
         .logout-button:hover {
             background-color: #c0392b;
+        }
+
+        /* Sezione del filtro */
+        .filter-container {
+            margin: 20px 0;
+            text-align: center;
         }
 
         /* Sezione della tabella */
@@ -95,29 +100,13 @@
     <a href="/" class="logout-button">Logout</a>
 </div>
 
-<div class="table-container">
-    <h1>PROJECT LIST</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>TITLE</th>
-            <th>CUP</th>
-            <th>FUNDING AGENCY</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
 
-        <tbody>
-        <tr th:each="project: ${projects}">
-            <td th:text="${project.title}">10</td>
-            <td th:text="${project.cup}">John</td>
-            <td th:text="${project.denominazioneSoggetto}">Smith</td>
-            <td><a th:href="@{projectmanagement(id=${project.id})}">add researcher</a></td>
-            <td><a th:href="@{validationtimesheet(id=${project.id})}">validate working hours</a></td>
-        </tr>
-        </tbody>
-    </table>
+
+<div class="table-container">
+
 </div>
+
+
+
 </body>
 </html>

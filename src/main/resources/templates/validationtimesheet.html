@@ -37,11 +37,16 @@
             border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
-
         }
 
         .logout-button:hover {
             background-color: #c0392b;
+        }
+
+        /* Sezione del filtro */
+        .filter-container {
+            margin: 20px 0;
+            text-align: center;
         }
 
         /* Sezione della tabella */
@@ -86,6 +91,12 @@
             text-decoration: underline;
         }
 
+        /* Disabilita il link */
+        .disabled-link {
+            color: #ccc;
+            pointer-events: none;
+        }
+
     </style>
 </head>
 
@@ -95,29 +106,68 @@
     <a href="/" class="logout-button">Logout</a>
 </div>
 
+<!-- Filtro per il Researcher -->
+<div class="filter-container">
+    <label for="researcherFilter">Filter by Researcher:</label>
+    <select id="researcherFilter" onchange="filterByResearcher()">
+        <option value="">All Researchers</option>
+        <option th:each="researcher: ${researchers}" th:value="${researcher}" th:text="${researcher}">Researcher 1</option>
+    </select>
+</div>
+
 <div class="table-container">
     <h1>PROJECT LIST</h1>
     <table>
         <thead>
         <tr>
-            <th>TITLE</th>
-            <th>CUP</th>
-            <th>FUNDING AGENCY</th>
+            <th>Researcher</th>
+            <th>Date</th>
+            <th>Project</th>
+            <th>Validated</th>
             <th></th>
             <th></th>
         </tr>
         </thead>
 
-        <tbody>
-        <tr th:each="project: ${projects}">
-            <td th:text="${project.title}">10</td>
-            <td th:text="${project.cup}">John</td>
-            <td th:text="${project.denominazioneSoggetto}">Smith</td>
-            <td><a th:href="@{projectmanagement(id=${project.id})}">add researcher</a></td>
-            <td><a th:href="@{validationtimesheet(id=${project.id})}">validate working hours</a></td>
+        <tbody id="timesheetRows">
+        <tr th:each="timesheet: ${lista}" th:data-researcher="${timesheet.getResearcher().username}">
+            <td th:text="${timesheet.getResearcher().username}">10</td>
+            <td th:text="${timesheet.getMonth()}">John</td>
+            <td th:text="${timesheet.getProject().title}">Smith</td>
+            <td th:text="${timesheet.isValidated()}">True</td>
+            <td><a href="#" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td>
+            <!-- "Download Timesheet" sempre attivo -->
+            <td><a href="#">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>
 </div>
+
+<script>
+    // Funzione per filtrare la tabella in base al selezionato
+    function filterByResearcher() {
+        const selectedResearcher = document.getElementById("researcherFilter").value;
+        const rows = document.querySelectorAll("#timesheetRows tr");
+
+        rows.forEach(row => {
+            const researcher = row.getAttribute("data-researcher");
+            if (selectedResearcher === "" || researcher === selectedResearcher) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+
+            // Disabilita il link "Validate it" per le righe con "Validated" a true
+            const validated = row.querySelector("td:nth-child(4)").textContent.trim().toLowerCase() === "true";
+            const validateLink = row.querySelector("td:nth-child(5) a");
+            if (validated) {
+                validateLink.classList.add("disabled-link");
+            } else {
+                validateLink.classList.remove("disabled-link");
+            }
+        });
+    }
+</script>
+
 </body>
 </html>
