@@ -6,14 +6,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 public class Researcher extends Utente {
 
     @ManyToMany(mappedBy = "researchers", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<Project> projects = new HashSet<>();
+    private List<Project> projects = new ArrayList<>();
 
     protected Researcher() {
     }
@@ -22,11 +24,11 @@ public class Researcher extends Utente {
         super(username, password, name, surname, cf);
     }
 
-    public void setProjects(Set<Project> projects) {
+    public void setProjects(List<Project> projects) {
         this.projects = projects;
     }
 
-    public Set<Project> getProjects() {
+    public List<Project> getProjects() {
         return projects;
     }
 

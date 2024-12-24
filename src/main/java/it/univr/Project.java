@@ -29,7 +29,7 @@ public class Project {
             joinColumns = @JoinColumn(name = "id_researcher"), // Colonna di join per Student
             inverseJoinColumns = @JoinColumn(name = "id_project") // Colonna di join per Course
     )
-    private Set<Researcher> researchers = new HashSet<>();
+    private List<Researcher> researchers = new ArrayList<>();
 
     @ElementCollection
     private List<WorkingTime> workingTimes = new ArrayList<>();
@@ -68,7 +68,7 @@ public class Project {
         return cfSoggetto;
     }
 
-    public Set<Researcher> getResearchers() {
+    public List<Researcher> getResearchers() {
         return researchers;
     }
 
@@ -100,7 +100,7 @@ public class Project {
         this.cfSoggetto = CFsoggetto;
     }
 
-    public void setResearchers(Set<Researcher> researchers) {
+    public void setResearchers(List<Researcher> researchers) {
         this.researchers = researchers;
     }
 

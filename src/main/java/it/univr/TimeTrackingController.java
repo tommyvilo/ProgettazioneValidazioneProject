@@ -53,21 +53,131 @@ public class TimeTrackingController {
     @PostConstruct
     public void init() {
         Researcher r1 = new Researcher("nicozerman","zermaculo","Nicolò","Zerman","ZRMNCL02S19L781E");
-        Supervisor s1 = new Supervisor("tom","tommyvilo","Tommaso","Vilotto","VLTTMS02B18F861N");
-        Administrator a1 = new Administrator("admin","admin","Gianfranco","Sulla Riva","GFTATS02B18F861N");
+        Researcher r2 = new Researcher("lucasrin", "lucarino", "Luca", "Rinaldi", "RNLCLS01D13L781X");
+        Researcher r3 = new Researcher("alessandrab1", "alessandrabb", "Alessandra", "Bianchi", "BNCHLD01E44F861Z");
+        Researcher r4 = new Researcher("giovanniferrari", "gioferr", "Giovanni", "Ferrari", "FRRGNN03C19A481S");
+        Researcher r5 = new Researcher("serenacapu", "serenacaputo", "Serena", "Caputo", "CPTSRN01B25L761Q");
+        Researcher r6 = new Researcher("marcofiore", "marcofiore", "Marco", "Fiore", "FIRMRC01D22N484S");
+        Researcher r7 = new Researcher("martina", "martabianchi", "Martina", "Bianchi", "BNCHTN02M55A922L");
+        Researcher r8 = new Researcher("lorenzomassimo", "lorenzomassimo", "Lorenzo", "Massimo", "MSSLNZ03L19D919M");
+        Researcher r9 = new Researcher("giuliasorriso", "giuliasorriso", "Giulia", "Sorriso", "SRRGIA01P63D876R");
+        Researcher r10 = new Researcher("marcoantonio", "marcoantonio", "Marco", "Antonio", "MTNTMR02R15F381A");
+        Researcher r11 = new Researcher("giuliafranceschi", "giuliafranceschi", "Giulia", "Franceschi", "FRNCGL02E45N001J");
+        Researcher r12 = new Researcher("andreaedvige", "andreaedvige", "Andrea", "Edvige", "EDVADR01C13L989M");
+        Researcher r13 = new Researcher("mariateresagrazi", "mariateresagrazi", "Maria Teresa", "Graziani", "GRZMTT01S77B124C");
+        Researcher r14 = new Researcher("francescotommaso", "francescotommaso", "Francesco", "Tommaso", "TMMSFC02D23R123A");
+        Researcher r15 = new Researcher("sergioruolo", "sergioruolo", "Sergio", "Ruolo", "RLSRGX01A01B456K");
 
         userRepository.save(r1);
-        userRepository.save(s1);
-        userRepository.save(a1);
+        userRepository.save(r2);
+        userRepository.save(r3);
+        userRepository.save(r4);
+        userRepository.save(r5);
+        userRepository.save(r6);
+        userRepository.save(r7);
+        userRepository.save(r8);
+        userRepository.save(r9);
+        userRepository.save(r10);
+        userRepository.save(r11);
+        userRepository.save(r12);
+        userRepository.save(r13);
+        userRepository.save(r14);
+        userRepository.save(r15);
 
-        Project p1 = new Project("Dux Mea Lux", "Fornite", "1F", "Univr", "97823");
+        Supervisor s1 = new Supervisor("tom","tommyvilo","Tommaso","Vilotto","VLTTMS02B18F861N");
+        Supervisor s2 = new Supervisor("mattia", "mattevino", "Mattia", "Vino", "VNTMTT01C25L591A");
+        Supervisor s3 = new Supervisor("alessandra", "alesforza", "Alessandra", "Forza", "FRZLSN01S57B849P");
+        Supervisor s4 = new Supervisor("davide", "davidevitali", "Davide", "Vitali", "VTLDVD01S43F031S");
+        Supervisor s5 = new Supervisor("francescospano", "francescospano", "Francesco", "Spano", "SPNFRS01M15E493D");
+
+        userRepository.save(s1);
+        userRepository.save(s2);
+        userRepository.save(s3);
+        userRepository.save(s4);
+        userRepository.save(s5);
+
+        Administrator a1 = new Administrator("admin","admin","Gianfranco","Sulla Riva","GFTATS02B18F861N");
+        Administrator a2 = new Administrator("superadmin", "superadmin", "Giovanni", "Rossi", "RSSGVN02H18A820L");
+        Administrator a3 = new Administrator("support", "support123", "Alessandra", "Bruni", "BRNLSR01K29F481X");
+
+        userRepository.save(a1);
+        userRepository.save(a2);
+        userRepository.save(a3);
+
+        Project p1 = new Project("NeuroPlus", "1S4DFFG", "1F", "Univr", "97823");
+        Project p2 = new Project("BioMedX", "2F5GHHK", "2A", "Polimi", "31425");
+        Project p3 = new Project("GreenTech", "3G7HJKL", "3B", "Sapienza", "14276");
+        Project p4 = new Project("SmartCity", "4H8KLMN", "4C", "Unipd", "25094");
+        Project p5 = new Project("QuantumLab", "5J9LMNO", "5D", "UniTO", "35872");
+
         projectRepository.save(p1);
+        projectRepository.save(p2);
+        projectRepository.save(p3);
+        projectRepository.save(p4);
+        projectRepository.save(p5);
 
         s1.addProject(p1);
         userRepository.save(s1);
 
+        s2.addProject(p2);
+        userRepository.save(s2);
+
+        s3.addProject(p3);
+        userRepository.save(s3);
+
+        s4.addProject(p4);
+        userRepository.save(s4);
+
+        s5.addProject(p5);
+        userRepository.save(s5);
+
         r1.addProject(p1);
+        r2.addProject(p1);
+        r3.addProject(p1);
+        r4.addProject(p1);
+        r5.addProject(p1);
+
+        r6.addProject(p2);
+        r7.addProject(p2);
+        r8.addProject(p2);
+        r9.addProject(p2);
+        r10.addProject(p2);
+
+        r11.addProject(p3);
+        r12.addProject(p3);
+        r13.addProject(p3);
+        r14.addProject(p3);
+        r15.addProject(p3);
+
+        r1.addProject(p4);
+        r2.addProject(p4);
+        r6.addProject(p4);
+        r8.addProject(p4);
+        r15.addProject(p4);
+
+        r3.addProject(p5);
+        r4.addProject(p5);
+        r9.addProject(p5);
+        r10.addProject(p5);
+        r13.addProject(p5);
+
         userRepository.save(r1);
+        userRepository.save(r2);
+        userRepository.save(r3);
+        userRepository.save(r4);
+        userRepository.save(r5);
+        userRepository.save(r6);
+        userRepository.save(r7);
+        userRepository.save(r8);
+        userRepository.save(r9);
+        userRepository.save(r10);
+        userRepository.save(r11);
+        userRepository.save(r12);
+        userRepository.save(r13);
+        userRepository.save(r14);
+        userRepository.save(r15);
+
+
     }
 
     @PostMapping("/print")

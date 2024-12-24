@@ -1,29 +1,32 @@
 package it.univr;
 
+import it.univr.User.Researcher;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.ManyToOne;
 
 @Embeddable
 public class WorkingTime {
 
-    private Long idUser;
+    @ManyToOne
+    private Researcher researcher;
 
     private Long workedHours;
     private boolean validated;
 
     protected WorkingTime() {}
 
-    public WorkingTime(Long idUser, Long workedHours, boolean validated) {
-        this.idUser = idUser;
+    public WorkingTime(Researcher researcher, Long workedHours, boolean validated) {
+        this.researcher = researcher;
         this.workedHours = workedHours;
         this.validated = validated;
     }
 
-    public void setIdUser(Long idUser){
-        this.idUser = idUser;
+    public void setResearcher(Researcher researcher){
+        this.researcher = researcher;
     }
 
-    public Long getIdUser(){
-        return idUser;
+    public Researcher getResearcher(){
+        return researcher;
     }
 
     public void setWorkedHours(Long workedHours){
