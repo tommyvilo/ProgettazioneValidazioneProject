@@ -1,13 +1,13 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>First Spring-MVC Application</title>
+    <title>Login - First Spring-MVC Application</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <style>
         /* Impostazioni generali */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #e0ebf5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
             color: #2c3e50;
             display: flex;
             justify-content: center;
@@ -18,47 +18,67 @@
 
         h1 {
             color: #34495e;
-            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         /* Form di login */
         .login-form {
-            background-color: #f7fbff;
+            background-color: #ffffff;
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 350px;
             text-align: center;
+            animation: fadeIn 1s ease-in-out;
         }
 
         .login-form input {
-            width: 100%;
+            width: calc(100% - 24px);
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
         }
 
         .login-form button {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
             padding: 14px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             width: 100%;
             cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
         }
 
         .login-form button:hover {
-            background-color: #2980b9;
+            background: linear-gradient(135deg, #2980b9, #1a5276);
+            transform: scale(1.05);
+        }
+
+        .login-form button:active {
+            transform: scale(0.98);
         }
 
         /* Link di registrazione */
         .register-link {
             margin-top: 20px;
             display: block;
-            color: #2980b9;
+            color: #3498db;
+            font-size: 14px;
             text-decoration: none;
+            transition: color 0.3s;
         }
 
         .register-link:hover {
@@ -66,8 +86,22 @@
             text-decoration: underline;
         }
 
-        .error-message{
+        .error-message {
             color: red;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        /* Animazione per il form */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -76,8 +110,8 @@
 <div class="login-form">
     <h1>Login</h1>
     <div th:if="${error}" class="error-message" th:text="${error}"></div>
-    <form action="loginUser" method="post" >
-        <input type="text" id="username" name="user" placeholder="Username" required >
+    <form action="loginUser" method="post">
+        <input type="text" id="username" name="user" placeholder="Username" required>
         <input type="password" id="password" name="psw" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>

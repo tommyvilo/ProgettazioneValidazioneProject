@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,9 +16,6 @@ import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 @Controller
 public class TimeTrackingController {
 
@@ -24,31 +23,6 @@ public class TimeTrackingController {
     private UserRepository userRepository;
     @Autowired
     private ProjectRepository projectRepository;
-
-    @RequestMapping("/")
-    public String login(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    cookie.setValue(null);  // Imposta il valore del cookie a null
-                    cookie.setMaxAge(0);    // Imposta l'età del cookie a 0 per eliminarlo
-                    cookie.setPath("/");    // Assicurati che il cookie venga rimosso per tutto il dominio
-                    response.addCookie(cookie);  // Aggiungi il cookie modificato nella risposta
-                }
-            }
-        }
-        return "login";}
-
-    @RequestMapping("/index")
-    public String index(HttpServletRequest request) {
-        if (isUserLoggedIn(request)) {
-            return "index";
-        } else {
-            return "redirect:/";
-        }
-    }
-
 
     @PostConstruct
     public void init() {
@@ -195,6 +169,64 @@ public class TimeTrackingController {
         return "login";
     }
 
+    @RequestMapping("/")
+    public String login(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    cookie.setValue(null);  // Imposta il valore del cookie a null
+                    cookie.setMaxAge(0);    // Imposta l'età del cookie a 0 per eliminarlo
+                    cookie.setPath("/");    // Assicurati che il cookie venga rimosso per tutto il dominio
+                    response.addCookie(cookie);  // Aggiungi il cookie modificato nella risposta
+                }
+            }
+        }
+        return "login";}
+
+    @RequestMapping("/login")
+    public String login() {
+        return "login"; // Nome del template Thymeleaf per il login
+    }
+
+    @RequestMapping("/supervisor")
+    public String supervisor(HttpServletRequest request, Model model) {
+        if(!isValidUrl("supervisor",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("projects", ((Supervisor)userRepository.findByUsername(cookie.getValue())).getProjects());
+        model.addAttribute("username", cookie.getValue());
+        return "supervisor";
+    }
+
+    @RequestMapping("/researcher")
+    public String researcher(HttpServletRequest request, Model model) {
+        if(!isValidUrl("researcher",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        return "researcher";
+    }
+
+    @RequestMapping("/administrator")
+    public String administrator(HttpServletRequest request, Model model) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        return "administrator";
+    }
+
+    @RequestMapping("/index")
+    public String index(HttpServletRequest request) {
+        if (isUserLoggedIn(request)) {
+            return getIndexByUser(request);
+        } else {
+            return "redirect:/";
+        }
+    }
+
     @RequestMapping("/loginUser")
     public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         if (userRepository.existsByUsername(user)) {
@@ -213,21 +245,46 @@ public class TimeTrackingController {
         else {
             redirectAttributes.addFlashAttribute("error", "User does not exist.");
         }
-        return "redirect:/";
+        return "redirect:/login";
     }
 
-
-    public boolean isUserLoggedIn(HttpServletRequest request) {
+    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    return true; // L'utente è loggato
+                if (cookie.getName().equals(cookieName)) {
+                    return cookie;
                 }
             }
         }
-        return false; // L'utente non è loggato
+        return null;
     }
+
+    private String getIndexByUser(HttpServletRequest request){
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        if(userRepository.findByUsername(cookie.getValue()) instanceof Supervisor){
+            return "redirect:/supervisor";
+        }
+        if(userRepository.findByUsername(cookie.getValue()) instanceof Researcher){
+            return "redirect:/researcher";
+        }
+        return "redirect:/administrator";
+    }
+
+    private boolean isValidUrl(String url,HttpServletRequest request){
+        return ("redirect:/"+url).equals(getIndexByUser(request));
+    }
+
+    public boolean isUserLoggedIn(HttpServletRequest request) {
+        Cookie cookie = getCookieByName(request,"userLoggedIn");
+        if (cookie != null) {
+            return userRepository.existsByUsername(cookie.getValue());
+
+        }
+        return false;
+    }
+
+
 
     /*@PostMapping("/createSupervisor")
     public Supervisor createSupervisor(@RequestBody Supervisor user) {

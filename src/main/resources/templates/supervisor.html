@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Welcome - Spring-MVC Application</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        /* Impostazioni generali */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0ebf5;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #34495e;
+        }
+
+        /* Contenitore del messaggio di benvenuto */
+        .welcome-container {
+            background-color: #f7fbff;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 2px solid #34495e;
+        }
+
+        .welcome-container h1 {
+            margin-bottom: 10px;
+        }
+
+        .welcome-container p {
+            font-size: 18px;
+        }
+
+        .logout-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Sezione della tabella */
+        .table-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="welcome-container">
+    <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
+    <p>We are glad to have you here! You can explore our features or logout.</p>
+    <a href="/" class="logout-button">Logout</a>
+</div>
+
+<div class="table-container">
+    <h1>PROJECT LIST</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>TITLE</th>
+            <th>CUP</th>
+            <th>FUNDING AGENCY</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="project: ${projects}">
+            <td th:text="${project.title}">10</td>
+            <td th:text="${project.cup}">John</td>
+            <td th:text="${project.denominazioneSoggetto}">Smith</td>
+            <td><a th:href="@{read(id=${project.id})}">add researcher</a></td>
+            <td><a th:href="@{edit(id=${project.id})}">validate working hours</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
