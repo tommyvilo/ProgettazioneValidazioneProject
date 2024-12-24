@@ -117,8 +117,8 @@
             <td th:text="${project.title}">10</td>
             <td th:text="${project.cup}">John</td>
             <td th:text="${project.denominazioneSoggetto}">Smith</td>
-            <td><a th:href="@{read(id=${project.id})}">add researcher</a></td>
-            <td><a th:href="@{edit(id=${project.id})}">validate working hours</a></td>
+            <td><a th:href="@{projectmanagement(id=${project.id})}">add researcher</a></td>
+            <td><a th:href="@{validation(id=${project.id})}">validate working hours</a></td>
         </tr>
         </tbody>
     </table>

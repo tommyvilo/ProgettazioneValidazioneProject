@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -84,83 +83,54 @@ public class TimeTrackingController {
         Project p4 = new Project("SmartCity", "4H8KLMN", "4C", "Unipd", "25094");
         Project p5 = new Project("QuantumLab", "5J9LMNO", "5D", "UniTO", "35872");
 
+        p1.setSupervisor(s1);
+        p2.setSupervisor(s2);
+        p3.setSupervisor(s3);
+        p4.setSupervisor(s4);
+        p5.setSupervisor(s5);
+
+        p1.addResearcher(r1);
+        p1.addResearcher(r2);
+        p1.addResearcher(r3);
+        p1.addResearcher(r4);
+        p1.addResearcher(r5);
+
+        p2.addResearcher(r6);
+        p2.addResearcher(r7);
+        p2.addResearcher(r8);
+        p2.addResearcher(r9);
+        p2.addResearcher(r10);
+
+        p3.addResearcher(r11);
+        p3.addResearcher(r12);
+        p3.addResearcher(r13);
+        p3.addResearcher(r14);
+        p3.addResearcher(r15);
+
+        p4.addResearcher(r1);
+        p4.addResearcher(r2);
+        p4.addResearcher(r6);
+        p4.addResearcher(r8);
+        p4.addResearcher(r15);
+
+        p5.addResearcher(r3);
+        p5.addResearcher(r4);
+        p5.addResearcher(r9);
+        p5.addResearcher(r10);
+        p5.addResearcher(r13);
+
         projectRepository.save(p1);
         projectRepository.save(p2);
         projectRepository.save(p3);
         projectRepository.save(p4);
         projectRepository.save(p5);
-
-        s1.addProject(p1);
-        userRepository.save(s1);
-
-        s2.addProject(p2);
-        userRepository.save(s2);
-
-        s3.addProject(p3);
-        userRepository.save(s3);
-
-        s4.addProject(p4);
-        userRepository.save(s4);
-
-        s5.addProject(p5);
-        userRepository.save(s5);
-
-        r1.addProject(p1);
-        r2.addProject(p1);
-        r3.addProject(p1);
-        r4.addProject(p1);
-        r5.addProject(p1);
-
-        r6.addProject(p2);
-        r7.addProject(p2);
-        r8.addProject(p2);
-        r9.addProject(p2);
-        r10.addProject(p2);
-
-        r11.addProject(p3);
-        r12.addProject(p3);
-        r13.addProject(p3);
-        r14.addProject(p3);
-        r15.addProject(p3);
-
-        r1.addProject(p4);
-        r2.addProject(p4);
-        r6.addProject(p4);
-        r8.addProject(p4);
-        r15.addProject(p4);
-
-        r3.addProject(p5);
-        r4.addProject(p5);
-        r9.addProject(p5);
-        r10.addProject(p5);
-        r13.addProject(p5);
-
-        userRepository.save(r1);
-        userRepository.save(r2);
-        userRepository.save(r3);
-        userRepository.save(r4);
-        userRepository.save(r5);
-        userRepository.save(r6);
-        userRepository.save(r7);
-        userRepository.save(r8);
-        userRepository.save(r9);
-        userRepository.save(r10);
-        userRepository.save(r11);
-        userRepository.save(r12);
-        userRepository.save(r13);
-        userRepository.save(r14);
-        userRepository.save(r15);
-
-
     }
 
     @PostMapping("/print")
     public String print(){
         for (Utente utente: userRepository.findAll()){
             System.out.println(utente);
-            if (utente instanceof Supervisor){
-                ((Supervisor) utente).getProjects().forEach(System.out::println);
-            }
+
         }
 
         for (Project project: projectRepository.findAll()){
@@ -195,7 +165,7 @@ public class TimeTrackingController {
             return "redirect:/index";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("projects", ((Supervisor)userRepository.findByUsername(cookie.getValue())).getProjects());
+        model.addAttribute("projects", projectRepository.findAllBySupervisor((Supervisor)userRepository.findByUsername(cookie.getValue())));
         model.addAttribute("username", cookie.getValue());
         return "supervisor";
     }
@@ -231,7 +201,7 @@ public class TimeTrackingController {
     public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         if (userRepository.existsByUsername(user)) {
             Utente foundUser = userRepository.findByUsername(user);
-            if (foundUser != null && foundUser.getPassword().equals(psw)) {
+            if (foundUser.getPassword().equals(psw)) {
                 Cookie cookie = new Cookie("userLoggedIn", foundUser.getUsername());
                 cookie.setMaxAge(3600); // 1 ora di durata
                 cookie.setHttpOnly(true); // Proteggi il cookie

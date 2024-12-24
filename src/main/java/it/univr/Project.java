@@ -31,9 +31,6 @@ public class Project {
     )
     private List<Researcher> researchers = new ArrayList<>();
 
-    @ElementCollection
-    private List<WorkingTime> workingTimes = new ArrayList<>();
-
     protected Project() {}
 
     public Project(String title, String cup, String code, String denominazioneSoggetto, String cfSoggetto) {
@@ -76,10 +73,6 @@ public class Project {
         return supervisor;
     }
 
-    public List<WorkingTime> workingTimes(){
-        return workingTimes;
-    }
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -106,10 +99,6 @@ public class Project {
 
     public void setSupervisor(Supervisor supervisor) {
         this.supervisor = supervisor;
-    }
-
-    public void setWorkingTimes(List<WorkingTime> workingTimes) {
-        this.workingTimes = workingTimes;
     }
 
     @Override

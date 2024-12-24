@@ -13,10 +13,6 @@ import java.util.Set;
 
 @Entity
 public class Researcher extends Utente {
-
-    @ManyToMany(mappedBy = "researchers", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Project> projects = new ArrayList<>();
-
     protected Researcher() {
     }
 
@@ -24,20 +20,4 @@ public class Researcher extends Utente {
         super(username, password, name, surname, cf);
     }
 
-    public void setProjects(List<Project> projects) {
-        this.projects = projects;
-    }
-
-    public List<Project> getProjects() {
-        return projects;
-    }
-
-    public void addProject(Project project){
-        this.projects.add(project);
-        project.addResearcher(this);
-    }
-
-    public String toString() {
-        return "Researcher: " + super.toString() + " Projects: " + projects.size();
-    }
 }

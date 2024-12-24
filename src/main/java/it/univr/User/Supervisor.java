@@ -11,30 +11,9 @@ import java.util.List;
 
 @Entity
 public class Supervisor extends Utente {
-
-    @OneToMany(mappedBy = "supervisor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Project> projects = new ArrayList<>();
-
     protected Supervisor(){}
 
     public Supervisor(String username, String password, String name, String surname, String cf){
         super(username, password, name, surname, cf);
-    }
-
-    public List<Project> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<Project> projects) {
-        this.projects = projects;
-    }
-
-    public void addProject(Project project){
-        projects.add(project);
-        project.setSupervisor(this);
-    }
-
-    public String toString() {
-        return "Supervisor: " + super.toString() + " Projects: " + projects.size();
     }
 }
