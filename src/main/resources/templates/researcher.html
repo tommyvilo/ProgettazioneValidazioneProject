@@ -9,60 +9,208 @@
             font-family: Arial, sans-serif;
             background-color: #e0ebf5;
             color: #2c3e50;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
         }
 
-        h1 {
-            color: #34495e;
-            text-align: center;
-        }
-
-        /* Contenitore della pagina */
+        /* Contenitore del messaggio di benvenuto */
         .welcome-container {
             background-color: #f7fbff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 400px;
-            text-align: center;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #34495e;
         }
 
         .welcome-container h1 {
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 24px;
+            color: #34495e;
         }
 
-        .welcome-container p {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-
-        /* Pulsante logout */
         .logout-button {
             background-color: #e74c3c;
             color: white;
-            padding: 14px 20px;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
-            width: 100%;
             cursor: pointer;
+            text-decoration: none;
+
         }
 
         .logout-button:hover {
             background-color: #c0392b;
         }
 
+        /* Sezione della tabella */
+        .table-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Pulsante salva */
+        .save-button {
+            margin-top: 20px;
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .save-button:hover {
+            background-color: #27ae60;
+        }
+
+        .save-button.disabled {
+            background-color: #e74c3c;
+            cursor: not-allowed;
+        }
+
+        .save-button.disabled:hover {
+            background-color: #e74c3c;
+        }
     </style>
 </head>
 
 <body>
 <div class="welcome-container">
-    <h1>Welcome RESEARCHER</h1>
-    <p>We are glad to have you here! You can explore our features or logout.</p>
+    <h1>Welcome RESEACHER <span id="username" th:text="${username}">username</span></h1>
     <a href="/" class="logout-button">Logout</a>
 </div>
+
+<div class="table-container">
+    <h1>PROJECT LIST</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>TITLE</th>
+            <th>CUP</th>
+            <th>FUNDING AGENCY</th>
+            <th>DAILY WORKING HOURS</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="project: ${projects}">
+            <td th:text="${project.title}">Project Title</td>
+            <td th:text="${project.cup}">CUP</td>
+            <td th:text="${project.denominazioneSoggetto}">Funding Agency</td>
+            <td>
+                <input type="range" name="hours" min="0" max="8" step="0.25"
+                       th:value="1" oninput="updateHours(this)">
+                <output>1:00</output>
+            </td>
+            <td><a th:href="@{downloadtimesheet(id=${project.id})}">Download Timesheet</a></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Pulsante per salvare le ore lavorative -->
+    <button class="save-button" id="saveButton" disabled>Salva ore lavorative</button>
+</div>
+
+<script>
+    // Memorizza lo stato iniziale degli slider
+    let initialSliderValues = [];
+
+    window.onload = function() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        sliders.forEach(slider => {
+            initialSliderValues.push(parseFloat(slider.value)); // Salva il valore iniziale
+        });
+        checkTotalHours(); // Controlla lo stato iniziale
+    };
+
+    /**
+     * Aggiorna il valore dello slider in formato ore:minuti e verifica lo stato.
+     */
+    function updateHours(slider) {
+        const value = parseFloat(slider.value);
+        const hours = Math.floor(value);
+        const minutes = Math.round((value - hours) * 60);
+        slider.nextElementSibling.value = `${hours}:${minutes.toString().padStart(2, '0')}`;
+        checkTotalHours();
+    }
+
+    /**
+     * Controlla lo stato degli slider e aggiorna il pulsante di salvataggio.
+     */
+    function checkTotalHours() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        const saveButton = document.getElementById('saveButton');
+        let totalHours = 0;
+        let hasChanges = false;
+
+        sliders.forEach((slider, index) => {
+            const currentValue = parseFloat(slider.value);
+            totalHours += currentValue;
+
+            // Controlla se uno slider è diverso dal valore iniziale
+            if (currentValue !== initialSliderValues[index]) {
+                hasChanges = true;
+            }
+        });
+
+        // Gestisci il pulsante di salvataggio
+        if (totalHours > 8) {
+            saveButton.classList.add('disabled');
+            saveButton.textContent = 'Errore: Ore lavorative totali giornaliere superate';
+            saveButton.disabled = true;
+            saveButton.style.display = 'block';
+        } else if (hasChanges) {
+            saveButton.classList.remove('disabled');
+            saveButton.textContent = 'Salva ore lavorative';
+            saveButton.disabled = false;
+            saveButton.style.display = 'block';
+        } else {
+            saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
+        }
+    }
+</script>
+
 </body>
 </html>

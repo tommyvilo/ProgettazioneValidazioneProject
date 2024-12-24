@@ -15,6 +15,9 @@ import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 @Controller
 public class TimeTrackingController {
 
@@ -39,7 +42,7 @@ public class TimeTrackingController {
         Researcher r12 = new Researcher("andreaedvige", "andreaedvige", "Andrea", "Edvige", "EDVADR01C13L989M");
         Researcher r13 = new Researcher("mariateresagrazi", "mariateresagrazi", "Maria Teresa", "Graziani", "GRZMTT01S77B124C");
         Researcher r14 = new Researcher("francescotommaso", "francescotommaso", "Francesco", "Tommaso", "TMMSFC02D23R123A");
-        Researcher r15 = new Researcher("sergioruolo", "sergioruolo", "Sergio", "Ruolo", "RLSRGX01A01B456K");
+        Researcher r15 = new Researcher("mot", "mot", "Sergio", "Ruolo", "RLSRGX01A01B456K");
 
         userRepository.save(r1);
         userRepository.save(r2);
@@ -176,7 +179,21 @@ public class TimeTrackingController {
             return "redirect:/index";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("projects", projectRepository.findAllByResearchersContains((Researcher) userRepository.findByUsername(cookie.getValue())));
+        model.addAttribute("username", cookie.getValue());
         return "researcher";
+    }
+
+    @RequestMapping("/downloadtimesheet")
+    public String downloadtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+        if(!isValidUrl("researcher",request)){
+            return "redirect:/index";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("project", projectRepository.findById(id));
+        model.addAttribute("validatedMonths",new ArrayList<>(Arrays.asList("10/2024","11/2024","12/2024")));
+        model.addAttribute("username", cookie.getValue());
+        return "downloadtimesheet";
     }
 
     @RequestMapping("/administrator")
