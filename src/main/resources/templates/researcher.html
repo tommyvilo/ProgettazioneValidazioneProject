@@ -37,7 +37,6 @@
             border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
-
         }
 
         .logout-button:hover {
@@ -112,6 +111,12 @@
         .save-button.disabled:hover {
             background-color: #e74c3c;
         }
+
+        /* Stile per la tabella disabilitata */
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -121,7 +126,8 @@
     <a href="/" class="logout-button">Logout</a>
 </div>
 
-<div class="table-container">
+<form action="saveWorkingTime">
+<div class="table-container" id="projectTableContainer">
     <h1>PROJECT LIST</h1>
     <table>
         <thead>
@@ -135,27 +141,39 @@
         </thead>
 
         <tbody>
-        <tr th:each="project: ${projects}">
-            <td th:text="${project.title}">Project Title</td>
-            <td th:text="${project.cup}">CUP</td>
-            <td th:text="${project.denominazioneSoggetto}">Funding Agency</td>
+        <tr th:each="hour: ${hours}">
+            <td th:text="${hour.getProject().title}">Project Title</td>
+            <td th:text="${hour.getProject().cup}">CUP</td>
+            <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
             <td>
                 <input type="range" name="hours" min="0" max="8" step="0.25"
-                       th:value="1" oninput="updateHours(this)">
-                <output>1:00</output>
+                       th:value="${hour.workedHours}" oninput="updateHours(this)">
+                <output th:text="${hour.getFormattedHours()}">1:00</output>
             </td>
-            <td><a th:href="@{downloadtimesheet(id=${project.id})}">Download Timesheet</a></td>
+            <td><a th:href="@{downloadtimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>
 
     <!-- Pulsante per salvare le ore lavorative -->
-    <button class="save-button" id="saveButton" disabled>Salva ore lavorative</button>
+
 </div>
+    <!-- Checkbox per ferie sotto la tabella -->
+    <div style="text-align: center; margin: 20px;">
+        <label>
+            <input type="checkbox" name="checkbox" id="vacationCheckbox" th:checked="${status}" onchange="toggleVacationMode()"> Segna come giornata di ferie
+        </label>
+    </div>
+    <button class="save-button" id="saveButton"  disabled>Salva ore lavorative</button>
+
+</form>
+
+
 
 <script>
     // Memorizza lo stato iniziale degli slider
     let initialSliderValues = [];
+    let vacationMode = false;
 
     window.onload = function() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
@@ -201,7 +219,7 @@
             saveButton.textContent = 'Errore: Ore lavorative totali giornaliere superate';
             saveButton.disabled = true;
             saveButton.style.display = 'block';
-        } else if (hasChanges) {
+        } else if (hasChanges && !vacationMode) {
             saveButton.classList.remove('disabled');
             saveButton.textContent = 'Salva ore lavorative';
             saveButton.disabled = false;
@@ -210,6 +228,39 @@
             saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
         }
     }
+
+
+
+    /**
+     * Disabilita la tabella e tutti gli input se il checkbox ferie è spuntato.
+     */
+    function toggleVacationMode() {
+        vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
+        const tableContainer = document.getElementById('projectTableContainer');
+        const saveButton = document.getElementById('saveButton');
+        console.log(status + " " + vacationMode + (status===vacationMode))
+        if (vacationMode) {
+            if(status!=vacationMode){
+                saveButton.classList.remove('disabled');
+                saveButton.textContent = 'Salva ore lavorative';
+                saveButton.disabled = false;
+                saveButton.style.display = 'block';
+            }
+            else {
+                saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
+
+            }
+            tableContainer.classList.add('disabled');
+
+        } else {
+            tableContainer.classList.remove('disabled');
+            checkTotalHours(); // Controlla se ci sono modifiche e mostra il bottone
+        }
+    }
+
+    let status = Boolean(vacationMode = document.getElementById('vacationCheckbox').checked);
+    // Inizializza la modalità ferie in base alla checkbox
+    toggleVacationMode();
 </script>
 
 </body>

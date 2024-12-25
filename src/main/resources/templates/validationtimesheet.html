@@ -126,6 +126,7 @@
             <th>Validated</th>
             <th></th>
             <th></th>
+            <th></th>
         </tr>
         </thead>
 
@@ -136,6 +137,7 @@
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td th:text="${timesheet.isValidated()}">True</td>
             <td><a href="#" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td>
+            <td><a href="#">Modify Timesheet</a></td>
             <!-- "Download Timesheet" sempre attivo -->
             <td><a href="#">Download Timesheet</a></td>
         </tr>

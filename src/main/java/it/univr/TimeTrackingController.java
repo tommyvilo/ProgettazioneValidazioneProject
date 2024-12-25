@@ -3,7 +3,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,9 +17,12 @@ import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @Controller
 public class TimeTrackingController {
@@ -26,6 +31,8 @@ public class TimeTrackingController {
     private UserRepository userRepository;
     @Autowired
     private ProjectRepository projectRepository;
+    @Autowired
+    private WorkingTimeRepository wtRepository;
 
     @PostConstruct
     public void init() {
@@ -130,6 +137,14 @@ public class TimeTrackingController {
         projectRepository.save(p3);
         projectRepository.save(p4);
         projectRepository.save(p5);
+
+        WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.now(),2,false,false);
+        WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.now(),2.5,false,false);
+        WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.now(),3,false,false);
+
+        wtRepository.save(w1);
+        wtRepository.save(w2);
+        wtRepository.save(w3);
     }
 
     @PostMapping("/print")
@@ -182,9 +197,41 @@ public class TimeTrackingController {
             return "redirect:/index";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("projects", projectRepository.findAllByResearchersContains((Researcher) userRepository.findByUsername(cookie.getValue())));
+        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
+
+        //model.addAttribute("projects", projectRepository.findAllByResearchersContains(researcher));
+        model.addAttribute("hours", wtRepository.findByDateAndResearcher(LocalDate.now(),researcher));
         model.addAttribute("username", cookie.getValue());
+        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,LocalDate.now()).getLeave());
         return "researcher";
+    }
+
+    @RequestMapping("/saveWorkingTime")
+    public String saveWorkingTime(HttpServletRequest request, Model model,
+                                  @RequestParam(name="hours", required=true) List<Double> hours,
+                                  @RequestParam(name="checkbox", required=false) String checkbox) {
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
+        Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(LocalDate.now(),researcher);
+
+        if(checkbox==null){
+            int counter = 0;
+            for(Project pj : listaProject){
+                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
+                wt.setWorkedHours(hours.get(counter));
+                wt.setLeave(false);
+                wtRepository.save(wt);
+                counter++;
+            }
+        } else {
+            for(Project pj : listaProject){ //settings all working time as 0 hours
+                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
+                //wtRepository.deleteByResearcherAndDateAndProject(researcher,LocalDate.now(),pj);
+                wtRepository.deleteById(wt.getId());
+                wtRepository.save(new WorkingTime(researcher,pj,LocalDate.now(),0,false,true));
+            }
+        }
+        return "redirect:/researcher";
     }
 
     @RequestMapping("/downloadtimesheet")
@@ -210,9 +257,9 @@ public class TimeTrackingController {
         Researcher r1 = (Researcher) userRepository.findByUsername("mot");
         Researcher r2 = (Researcher) userRepository.findByUsername("nicozerman");
         Project p1 = projectRepository.findByTitle("NeuroPlus");
-        WorkingTime t1 = new WorkingTime(r1,p1, new Date(124,10,1),6L,true);
-        WorkingTime t2 = new WorkingTime(r1,p1, new Date(124,11,1),6L,false);
-        WorkingTime t3 = new WorkingTime(r2,p1, new Date(124,11,1),6L,false);
+        WorkingTime t1 = new WorkingTime(r1,p1, LocalDate.of(2024, 11, 1),6L,true,false);
+        WorkingTime t2 = new WorkingTime(r1,p1, LocalDate.of(2024,11,1),6L,false,false);
+        WorkingTime t3 = new WorkingTime(r2,p1, LocalDate.of(2024,11,1),6L,false,false);
 
         //ipotizzando che quando supervisor valida, valida tutti i working time di un mese
         //sarà necessario passare una lista di working time, uno per ogni primo del mese tipo, relativi ad un ricercatore, per far funzionare l'html

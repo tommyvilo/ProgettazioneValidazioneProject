@@ -4,7 +4,9 @@ import it.univr.User.Researcher;
 import jakarta.persistence.*;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 @Entity
 public class WorkingTime {
@@ -18,19 +20,22 @@ public class WorkingTime {
     @ManyToOne
     private Project project;
 
-    private Date date;
+    private LocalDate date;
 
-    private Long workedHours;
+    private double workedHours;
     private boolean validated;
+
+    private boolean leave; //Malattie, ferie ecc...
 
     protected WorkingTime() {}
 
-    public WorkingTime(Researcher researcher, Project project, Date date, Long workedHours, boolean validated) {
+    public WorkingTime(Researcher researcher, Project project, LocalDate date, double workedHours, boolean validated, boolean leave) {
         this.researcher = researcher;
         this.project = project;
         this.date = date;
         this.workedHours = workedHours;
         this.validated = validated;
+        this.leave = leave;
     }
 
     public void setResearcher(Researcher researcher){
@@ -49,20 +54,28 @@ public class WorkingTime {
         return project;
     }
 
-    public void setDate(Date date){
+    public void setDate(LocalDate date){
         this.date = date;
     }
 
-    public Date getDate(){
+    public LocalDate getDate(){
         return date;
     }
 
-    public void setWorkedHours(Long workedHours){
+    public void setWorkedHours(double workedHours){
         this.workedHours = workedHours;
     }
 
-    public Long getWorkedHours(){
+    public double getWorkedHours(){
         return workedHours;
+    }
+
+    public void setLeave(boolean leave){
+        this.leave = leave;
+    }
+
+    public boolean getLeave(){
+        return leave;
     }
 
     public void setValidated(boolean validated){
@@ -74,9 +87,20 @@ public class WorkingTime {
     }
 
     public String getMonth() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy");
-        System.out.println(date);
-        return sdf.format(date);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+        return date.format(formatter);
+    }
+
+    public long getId(){
+        return id;
+    }
+
+    public String getFormattedHours(){
+        int hours = (int) workedHours;
+        int minutes = (int) Math.round((workedHours - hours) * 60);
+
+        // Format minutes with leading zero if necessary
+        return String.format("%d:%02d", hours, minutes);
     }
 
 
