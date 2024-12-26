@@ -18,15 +18,34 @@
             background-color: #f7fbff;
             padding: 20px 40px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Cambiato per centrare l'h1 */
             align-items: center;
             border-bottom: 2px solid #34495e;
+        }
+
+        .welcome-container .back-button {
+            position: absolute;
+            left: 40px; /* Posiziona il bottone a sinistra */
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
         }
 
         .welcome-container h1 {
             margin: 0;
             font-size: 24px;
             color: #34495e;
+            text-align: center;
+            flex-grow: 1; /* Rimuovere 'auto' */
+        }
+
+
+        .welcome-container .back-button:hover {
+            background-color: #2980b9;
         }
 
         .logout-button {
@@ -37,7 +56,6 @@
             border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
-
         }
 
         .logout-button:hover {
@@ -92,7 +110,7 @@
 <body>
 <div class="welcome-container">
     <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
-    <a href="/" class="logout-button">Logout</a>
+    <a href="/logout" class="logout-button">Logout</a>
 </div>
 
 <div class="table-container">
@@ -113,7 +131,7 @@
             <td th:text="${project.title}">10</td>
             <td th:text="${project.cup}">John</td>
             <td th:text="${project.denominazioneSoggetto}">Smith</td>
-            <td><a th:href="@{projectmanagement(id=${project.id})}">add researcher</a></td>
+            <td><a th:href="@{projectmanagement(id=${project.id})}">manage researcher</a></td>
             <td><a th:href="@{validationtimesheet(id=${project.id})}">validate working hours</a></td>
         </tr>
         </tbody>

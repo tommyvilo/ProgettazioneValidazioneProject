@@ -170,6 +170,14 @@ public class TimeTrackingController {
     }
 
     @RequestMapping("/")
+    public String principale(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return "redirect:/index";
+        }
+        return "login";}
+
+    @RequestMapping("/login")
     public String login(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -184,15 +192,26 @@ public class TimeTrackingController {
         }
         return "login";}
 
-    @RequestMapping("/login")
-    public String login() {
-        return "login"; // Nome del template Thymeleaf per il login
-    }
+    @RequestMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    cookie.setValue(null);  // Imposta il valore del cookie a null
+                    cookie.setMaxAge(0);    // Imposta l'età del cookie a 0 per eliminarlo
+                    cookie.setPath("/");    // Assicurati che il cookie venga rimosso per tutto il dominio
+                    response.addCookie(cookie);  // Aggiungi il cookie modificato nella risposta
+                }
+            }
+        }
+        return "redirect:/login";}
 
     @RequestMapping("/supervisor")
     public String supervisor(HttpServletRequest request, Model model) {
+
         if(!isValidUrl("supervisor",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         model.addAttribute("projects", projectRepository.findAllBySupervisor((Supervisor)userRepository.findByUsername(cookie.getValue())));
@@ -203,7 +222,7 @@ public class TimeTrackingController {
     @RequestMapping("/researcher")
     public String researcher(HttpServletRequest request, Model model) {
         if(!isValidUrl("researcher",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
@@ -217,9 +236,7 @@ public class TimeTrackingController {
     }
 
     @RequestMapping("/saveWorkingTime")
-    public String saveWorkingTime(HttpServletRequest request, Model model,
-                                  @RequestParam(name="hours", required=true) List<Double> hours,
-                                  @RequestParam(name="checkbox", required=false) String checkbox) {
+    public String saveWorkingTime(HttpServletRequest request, Model model, @RequestParam(name="hours", required=true) List<Double> hours, @RequestParam(name="checkbox", required=false) String checkbox) {
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
         Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(LocalDate.now(),researcher);
@@ -244,12 +261,10 @@ public class TimeTrackingController {
         return "redirect:/researcher";
     }
 
-
-
     @RequestMapping("/downloadtimesheet")
     public String downloadtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
         if(!isValidUrl("researcher",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         Project project = projectRepository.findById(id);
@@ -264,7 +279,7 @@ public class TimeTrackingController {
     @RequestMapping("/validationtimesheet")
     public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
         if(!isValidUrl("supervisor",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn"); //SERVE???
         Project project = projectRepository.findById(id);
@@ -282,12 +297,27 @@ public class TimeTrackingController {
     }
 
     @RequestMapping("/projectmanagement")
-    public String projectmanagement(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+    public String projectmanagement(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
         if(!isValidUrl("supervisor",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
 
+        ArrayList<Researcher> listaRicercatori = new ArrayList<>();
+        for (Utente utente : userRepository.findAll()){
+            if(utente instanceof  Researcher){
+                listaRicercatori.add((Researcher) utente);
+            }
+        }
+
+        ArrayList<Long> listaIdRicercatori = new ArrayList<>();
+        for (Utente utente : projectRepository.findById(id).getResearchers()){
+            listaIdRicercatori.add(utente.getId());
+        }
+
+        model.addAttribute("selectedResearcherIds",listaIdRicercatori);
+        model.addAttribute("allResearcher",listaRicercatori);
+        model.addAttribute("project",projectRepository.findById(id));
         model.addAttribute("username", cookie.getValue());
         return "projectmanagement";
     }
@@ -309,7 +339,7 @@ public class TimeTrackingController {
     @RequestMapping("/administrator")
     public String administrator(HttpServletRequest request, Model model) {
         if(!isValidUrl("administrator",request)){
-            return "redirect:/index";
+            return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         return "administrator";
@@ -320,7 +350,7 @@ public class TimeTrackingController {
         if (isUserLoggedIn(request)) {
             return getIndexByUser(request);
         } else {
-            return "redirect:/";
+            return "redirect:/login";
         }
     }
 
@@ -369,7 +399,15 @@ public class TimeTrackingController {
     }
 
     private boolean isValidUrl(String url,HttpServletRequest request){
-        return ("redirect:/"+url).equals(getIndexByUser(request));
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    return ("redirect:/"+url).equals(getIndexByUser(request));
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isUserLoggedIn(HttpServletRequest request) {
@@ -394,8 +432,8 @@ public class TimeTrackingController {
                 LocalDate.of(year, Month.AUGUST, 15),     // Ferragosto
                 LocalDate.of(year, Month.NOVEMBER, 1),    // Tutti i Santi
                 LocalDate.of(year, Month.DECEMBER, 8),    // Immacolata Concezione
-                LocalDate.of(year, Month.DECEMBER, 25)   // Natale
-                //LocalDate.of(year, Month.DECEMBER, 26)    // Santo Stefano
+                LocalDate.of(year, Month.DECEMBER, 25),  // Natale
+                LocalDate.of(year, Month.DECEMBER, 26)    // Santo Stefano
         );
 
         // Controllo festività fisse
