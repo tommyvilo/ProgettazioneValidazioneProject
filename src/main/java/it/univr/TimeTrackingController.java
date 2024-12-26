@@ -3,9 +3,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,13 +14,14 @@ import it.univr.User.Administrator;
 import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
-
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.DayOfWeek;
+import java.time.Month;
+import java.util.List;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+
 
 @Controller
 public class TimeTrackingController {
@@ -139,12 +138,20 @@ public class TimeTrackingController {
         projectRepository.save(p5);
 
         WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.now(),2,false,false);
+        WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,true,false);
+        WorkingTime w7 = new WorkingTime(r15,p1, LocalDate.of(2024,12,10),2,false,false);
         WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.now(),2.5,false,false);
         WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.now(),3,false,false);
+        WorkingTime w5 = new WorkingTime(r15,p4, LocalDate.of(2024,12,10),4,false,false);
+        WorkingTime w4 = new WorkingTime(r15,p4, LocalDate.of(2024,11,19),8,true,false);
 
         wtRepository.save(w1);
         wtRepository.save(w2);
         wtRepository.save(w3);
+        wtRepository.save(w4);
+        wtRepository.save(w5);
+        wtRepository.save(w6);
+        wtRepository.save(w7);
     }
 
     @PostMapping("/print")
@@ -198,11 +205,12 @@ public class TimeTrackingController {
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
+        LocalDate date = LocalDate.now();
 
-        //model.addAttribute("projects", projectRepository.findAllByResearchersContains(researcher));
-        model.addAttribute("hours", wtRepository.findByDateAndResearcher(LocalDate.now(),researcher));
+        model.addAttribute("hours", wtRepository.findByDateAndResearcher(date,researcher));
         model.addAttribute("username", cookie.getValue());
-        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,LocalDate.now()).getLeave());
+        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave()); //Se null (ore giornaliere non ancora inserite), lo vede come false
+        model.addAttribute("isHoliday",isHoliday(date));
         return "researcher";
     }
 
@@ -234,38 +242,39 @@ public class TimeTrackingController {
         return "redirect:/researcher";
     }
 
+
+
     @RequestMapping("/downloadtimesheet")
-    public String downloadtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+    public String downloadtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
         if(!isValidUrl("researcher",request)){
             return "redirect:/index";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("project", projectRepository.findById(id));
-        model.addAttribute("validatedMonths",new ArrayList<>(Arrays.asList("10/2024","11/2024","12/2024")));
+        Project project = projectRepository.findById(id);
+        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
+
+        model.addAttribute("project", project);
+        model.addAttribute("validatedMonths",getWorkedMonth(project, researcher));
         model.addAttribute("username", cookie.getValue());
         return "downloadtimesheet";
     }
 
     @RequestMapping("/validationtimesheet")
-    public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = false) long id) {
+    public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
         if(!isValidUrl("supervisor",request)){
             return "redirect:/index";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        Cookie cookie = getCookieByName(request, "userLoggedIn"); //SERVE???
+        Project project = projectRepository.findById(id);
+        Iterable<Researcher> researchers = projectRepository.findResearchersByProjectId(id);
 
-        //forExample
-        Researcher r1 = (Researcher) userRepository.findByUsername("mot");
-        Researcher r2 = (Researcher) userRepository.findByUsername("nicozerman");
-        Project p1 = projectRepository.findByTitle("NeuroPlus");
-        WorkingTime t1 = new WorkingTime(r1,p1, LocalDate.of(2024, 11, 1),6L,true,false);
-        WorkingTime t2 = new WorkingTime(r1,p1, LocalDate.of(2024,11,1),6L,false,false);
-        WorkingTime t3 = new WorkingTime(r2,p1, LocalDate.of(2024,11,1),6L,false,false);
+        ArrayList<WorkingTime> wts = new ArrayList<>();
+        for(Researcher researcher : researchers){
+            wts.addAll(getWorkedMonthWt(project,researcher));
+        }
 
-        //ipotizzando che quando supervisor valida, valida tutti i working time di un mese
-        //sarà necessario passare una lista di working time, uno per ogni primo del mese tipo, relativi ad un ricercatore, per far funzionare l'html
-        //serve anche passare una lista di tutti i ricercatori coinvolti
-        model.addAttribute("lista",new ArrayList<>(Arrays.asList(t1,t2,t3)));
-        model.addAttribute("researchers",new ArrayList<>(Arrays.asList(r1.getUsername(),r2.getUsername())));
+        model.addAttribute("workedMonthYear",wts);
+        model.addAttribute("researchers",researchers);
         model.addAttribute("username", cookie.getValue());
         return "validationtimesheet";
     }
@@ -356,6 +365,91 @@ public class TimeTrackingController {
         }
         return false;
     }
+
+    public boolean isHoliday(LocalDate date) {
+        int year = date.getYear();
+
+        // Festività fisse
+        List<LocalDate> fixedHolidays = List.of(
+                LocalDate.of(year, Month.JANUARY, 1),     // Capodanno
+                LocalDate.of(year, Month.JANUARY, 6),     // Epifania
+                LocalDate.of(year, Month.APRIL, 25),      // Festa della Liberazione
+                LocalDate.of(year, Month.MAY, 1),         // Festa dei lavoratori
+                LocalDate.of(year, Month.JUNE, 2),        // Festa della Repubblica
+                LocalDate.of(year, Month.AUGUST, 15),     // Ferragosto
+                LocalDate.of(year, Month.NOVEMBER, 1),    // Tutti i Santi
+                LocalDate.of(year, Month.DECEMBER, 8),    // Immacolata Concezione
+                LocalDate.of(year, Month.DECEMBER, 25)   // Natale
+                //LocalDate.of(year, Month.DECEMBER, 26)    // Santo Stefano
+        );
+
+        // Controllo festività fisse
+        if (fixedHolidays.contains(date)) {
+            return true;
+        }
+
+        // Controllo Pasqua e Pasquetta (variabili)
+        LocalDate easterSunday = getEasterSunday(year);
+        LocalDate easterMonday = easterSunday.plusDays(1);
+        if (date.equals(easterSunday) || date.equals(easterMonday)) {
+            return true;
+        }
+
+        // Controllo fine settimana
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private LocalDate getEasterSunday(int year) {
+        int a = year % 19;
+        int b = year / 100;
+        int c = year % 100;
+        int d = b / 4;
+        int e = b % 4;
+        int f = (b + 8) / 25;
+        int g = (b - f + 1) / 3;
+        int h = (19 * a + b - d - g + 15) % 30;
+        int i = c / 4;
+        int k = c % 4;
+        int l = (32 + 2 * e + 2 * i - h - k) % 7;
+        int m = (a + 11 * h + 22 * l) / 451;
+        int month = (h + l - 7 * m + 114) / 31;
+        int day = ((h + l - 7 * m + 114) % 31) + 1;
+        return LocalDate.of(year, month, day);
+    }
+
+    public ArrayList<String> getWorkedMonth(Project project, Researcher researcher){
+        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByValidatedTrueAndResearcherAndProject(researcher, project);
+        ArrayList<String> monthYearList = new ArrayList<>();
+        for(WorkingTime wt : wts){
+            String monthYear = wt.getMonthYear();
+            if (!monthYearList.contains(monthYear)){
+                monthYearList.add(monthYear);
+            }
+        }
+        return monthYearList;
+    }
+
+    public ArrayList<WorkingTime> getWorkedMonthWt(Project project, Researcher researcher){
+        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByResearcherAndProject(researcher, project);
+        ArrayList<WorkingTime> listWts = new ArrayList<>();
+
+        ArrayList<String> monthYearList = new ArrayList<>();
+
+        for(WorkingTime wt : wts){
+            String monthYear = wt.getMonthYear();
+            if (!monthYearList.contains(monthYear)){
+                monthYearList.add(monthYear);
+                listWts.add(wt);
+            }
+        }
+        return listWts;
+    }
+
 
 
 

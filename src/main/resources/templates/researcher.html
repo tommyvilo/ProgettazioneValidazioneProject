@@ -170,18 +170,47 @@
 
 
 
-<script>
+<script th:inline="javascript">
     // Memorizza lo stato iniziale degli slider
     let initialSliderValues = [];
     let vacationMode = false;
+    let festivita = [[${isHoliday}]];
 
     window.onload = function() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         sliders.forEach(slider => {
             initialSliderValues.push(parseFloat(slider.value)); // Salva il valore iniziale
         });
-        checkTotalHours(); // Controlla lo stato iniziale
+
+
+        // Blocca tutto se è un giorno festivo
+        if (festivita) {
+            blockAllDueToHoliday();
+        } else {
+            checkTotalHours(); // Controlla lo stato iniziale
+        }
     };
+
+    /**
+     * Blocca tutte le interazioni se è un giorno festivo.
+     */
+    function blockAllDueToHoliday() {
+        const tableContainer = document.getElementById('projectTableContainer');
+        const saveButton = document.getElementById('saveButton');
+        const vacationCheckbox = document.getElementById('vacationCheckbox');
+
+        // Disabilita la tabella
+        tableContainer.classList.add('disabled');
+
+        // Disabilita il checkbox
+        vacationCheckbox.disabled = true;
+
+        // Nascondi il pulsante di salvataggio
+        saveButton.style.display = 'none';
+
+        // Mostra un messaggio di avviso opzionale
+        alert('Oggi non è un giorno lavorativo. Le modifiche non sono consentite.');
+    }
 
     /**
      * Aggiorna il valore dello slider in formato ore:minuti e verifica lo stato.

@@ -151,7 +151,7 @@
         <tbody>
         <tr th:each="month: ${validatedMonths}">
             <td th:text="${month}">10</td>
-            <td><a href="#">Download Timesheet</a></td>
+            <td><a th:href="@{/download(idProject=${project.getId()}, date=${month})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>

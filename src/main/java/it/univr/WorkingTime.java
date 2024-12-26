@@ -86,7 +86,7 @@ public class WorkingTime {
         return validated;
     }
 
-    public String getMonth() {
+    public String getMonthYear() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
         return date.format(formatter);
     }

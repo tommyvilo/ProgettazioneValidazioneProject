@@ -111,7 +111,7 @@
     <label for="researcherFilter">Filter by Researcher:</label>
     <select id="researcherFilter" onchange="filterByResearcher()">
         <option value="">All Researchers</option>
-        <option th:each="researcher: ${researchers}" th:value="${researcher}" th:text="${researcher}">Researcher 1</option>
+        <option th:each="researcher: ${researchers}" th:value="${researcher.username}" th:text="${researcher.username}">Researcher 1</option>
     </select>
 </div>
 
@@ -131,14 +131,13 @@
         </thead>
 
         <tbody id="timesheetRows">
-        <tr th:each="timesheet: ${lista}" th:data-researcher="${timesheet.getResearcher().username}">
+        <tr th:each="timesheet: ${workedMonthYear}" th:data-researcher="${timesheet.getResearcher().username}">
             <td th:text="${timesheet.getResearcher().username}">10</td>
-            <td th:text="${timesheet.getMonth()}">John</td>
+            <td th:text="${timesheet.getMonthYear()}">John</td>
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td th:text="${timesheet.isValidated()}">True</td>
             <td><a href="#" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td>
             <td><a href="#">Modify Timesheet</a></td>
-            <!-- "Download Timesheet" sempre attivo -->
             <td><a href="#">Download Timesheet</a></td>
         </tr>
         </tbody>
@@ -146,10 +145,17 @@
 </div>
 
 <script>
+
+
     // Funzione per filtrare la tabella in base al selezionato
     function filterByResearcher() {
         const selectedResearcher = document.getElementById("researcherFilter").value;
         const rows = document.querySelectorAll("#timesheetRows tr");
+
+        // Ottieni il mese e l'anno attuali
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // i mesi sono indicizzati da 0 (0 = gennaio)
+        const currentYear = currentDate.getFullYear();
 
         rows.forEach(row => {
             const researcher = row.getAttribute("data-researcher");
@@ -159,16 +165,26 @@
                 row.style.display = "none";
             }
 
-            // Disabilita il link "Validate it" per le righe con "Validated" a true
-            const validated = row.querySelector("td:nth-child(4)").textContent.trim().toLowerCase() === "true";
+            // Estrai la data dalla riga e confrontala con la data attuale
+            const dateCell = row.querySelector("td:nth-child(2)"); // La seconda colonna contiene la data
+            const dateText = dateCell.textContent.trim();
+            const [month, year] = dateText.split("/"); // Supponiamo che la data sia nel formato MM/YYYY
+            const isCurrentMonthYear = (parseInt(month) === currentMonth && parseInt(year) === currentYear);
+
+            // Disabilita il link "Validate it" per le righe con data corrispondente al mese/anno attuali
             const validateLink = row.querySelector("td:nth-child(5) a");
-            if (validated) {
+            if (isCurrentMonthYear) {
                 validateLink.classList.add("disabled-link");
+                validateLink.setAttribute("href", "#"); // Impedisce il click
+                validateLink.style.pointerEvents = "none"; // Disabilita il clic
             } else {
                 validateLink.classList.remove("disabled-link");
+                validateLink.setAttribute("href", "#"); // Reimposta il link
+                validateLink.style.pointerEvents = "auto"; // Rende di nuovo cliccabile
             }
         });
     }
+    filterByResearcher();
 </script>
 
 </body>

@@ -13,6 +13,10 @@ public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long>
     @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.researcher=?2 ")
     Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Researcher researcher);
 
+    Iterable<WorkingTime> findWorkingTimesByResearcherAndProject(Researcher researcher, Project project);
+
+    Iterable<WorkingTime> findWorkingTimesByValidatedTrueAndResearcherAndProject(Researcher researcher, Project project);
+
     WorkingTime getWorkingTimeByProjectAndResearcherAndDate(Project project, Researcher researcher, LocalDate date);
 
     WorkingTime getTopByResearcherAndDate(Researcher researcher, LocalDate date);
