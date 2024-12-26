@@ -131,13 +131,12 @@
         </thead>
 
         <tbody id="timesheetRows">
-        <tr th:each="timesheet: ${workedMonthYear}" th:data-researcher="${timesheet.getResearcher().username}">
+        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.isValidated()}" th:data-researcher="${timesheet.getResearcher().username}">
             <td th:text="${timesheet.getResearcher().username}">10</td>
             <td th:text="${timesheet.getMonthYear()}">John</td>
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td th:text="${timesheet.isValidated()}">True</td>
-            <td><a href="#" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td>
-            <td><a href="#">Modify Timesheet</a></td>
+            <td><a th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
             <td><a href="#">Download Timesheet</a></td>
         </tr>
         </tbody>
@@ -166,6 +165,7 @@
             }
 
             // Estrai la data dalla riga e confrontala con la data attuale
+            const isValidated = row.getAttribute("isValidated")
             const dateCell = row.querySelector("td:nth-child(2)"); // La seconda colonna contiene la data
             const dateText = dateCell.textContent.trim();
             const [month, year] = dateText.split("/"); // Supponiamo che la data sia nel formato MM/YYYY
@@ -173,13 +173,11 @@
 
             // Disabilita il link "Validate it" per le righe con data corrispondente al mese/anno attuali
             const validateLink = row.querySelector("td:nth-child(5) a");
-            if (isCurrentMonthYear) {
+            if (isCurrentMonthYear || isValidated === "true") {
                 validateLink.classList.add("disabled-link");
-                validateLink.setAttribute("href", "#"); // Impedisce il click
                 validateLink.style.pointerEvents = "none"; // Disabilita il clic
             } else {
                 validateLink.classList.remove("disabled-link");
-                validateLink.setAttribute("href", "#"); // Reimposta il link
                 validateLink.style.pointerEvents = "auto"; // Rende di nuovo cliccabile
             }
         });

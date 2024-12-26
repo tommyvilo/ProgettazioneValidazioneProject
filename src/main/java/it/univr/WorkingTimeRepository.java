@@ -20,6 +20,8 @@ public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long>
     WorkingTime getWorkingTimeByProjectAndResearcherAndDate(Project project, Researcher researcher, LocalDate date);
 
     WorkingTime getTopByResearcherAndDate(Researcher researcher, LocalDate date);
+    
+    WorkingTime findById(long id);
 
-    void deleteByResearcherAndDateAndProject(Researcher researcher, LocalDate date, Project project);
+    Iterable<WorkingTime> findAllByDateBetweenAndProjectAndResearcher(LocalDate dateAfter, LocalDate dateBefore, Project project, Researcher researcher);
 }

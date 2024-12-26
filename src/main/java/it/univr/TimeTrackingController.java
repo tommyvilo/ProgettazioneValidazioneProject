@@ -17,10 +17,12 @@ import it.univr.User.Utente;
 import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.time.Month;
+import java.time.YearMonth;
 import java.util.List;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 
 @Controller
@@ -138,7 +140,7 @@ public class TimeTrackingController {
         projectRepository.save(p5);
 
         WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.now(),2,false,false);
-        WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,true,false);
+        WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,false,false);
         WorkingTime w7 = new WorkingTime(r15,p1, LocalDate.of(2024,12,10),2,false,false);
         WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.now(),2.5,false,false);
         WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.now(),3,false,false);
@@ -290,6 +292,19 @@ public class TimeTrackingController {
         return "projectmanagement";
     }
 
+    @RequestMapping("/approveTimesheet")
+    public String approveTimesheet(@RequestParam(name="id", required = true) long id) {
+        WorkingTime wt = wtRepository.findById(id);
+        Researcher researcher = wt.getResearcher();
+        Project project = wt.getProject();
+        LocalDate date = wt.getDate();
+
+        for (WorkingTime everyWt: wtRepository.findAllByDateBetweenAndProjectAndResearcher(LocalDate.of(date.getYear(),date.getMonth(),1),LocalDate.of(date.getYear(),date.getMonth(),YearMonth.of(date.getYear(),date.getMonth()).lengthOfMonth()),project,researcher)){
+            everyWt.setValidated(true);
+            wtRepository.save(everyWt);
+        }
+        return "redirect:/validationtimesheet?id="+wt.getProject().getId();
+    }
 
     @RequestMapping("/administrator")
     public String administrator(HttpServletRequest request, Model model) {
