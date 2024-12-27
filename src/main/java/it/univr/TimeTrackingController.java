@@ -413,7 +413,6 @@ public class TimeTrackingController {
     @PostMapping("/createProject")
     public String createProject(@RequestParam(name="title")String title, @RequestParam(name="cup")String cup, @RequestParam(name="cup")String code, @RequestParam(name="denominiazioneSoggetto")String denominiazioneSoggetto, @RequestParam(name="cfSoggetto")String cfSoggetto, @RequestParam(name="supervisor")Long supervisor // ID del supervisore scelto
     ) {
-        System.out.println(supervisor);
         return "redirect:/manageprojects";
     }
 
