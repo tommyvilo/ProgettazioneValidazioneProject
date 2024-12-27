@@ -157,7 +157,7 @@
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td th:text="${timesheet.isValidated()}">True</td>
             <td><a th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
-            <td><a href="#">Download Timesheet</a></td>
+            <td><a th:href="@{/download(idProject=${timesheet.getProject().getId()}, date=${timesheet.getMonthYear()}, researcherUser=${timesheet.getResearcher().getUsername()})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>

@@ -21,8 +21,6 @@ import java.time.YearMonth;
 import java.util.List;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
 
 
 @Controller
@@ -319,7 +317,7 @@ public class TimeTrackingController {
         model.addAttribute("allResearcher",listaRicercatori);
         model.addAttribute("project",projectRepository.findById(id));
         model.addAttribute("username", cookie.getValue());
-        return "projectmanagement";
+        return "superviseproject";
     }
 
     @RequestMapping("/approveTimesheet")
@@ -342,7 +340,81 @@ public class TimeTrackingController {
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("username", cookie.getValue());
         return "administrator";
+    }
+
+    @RequestMapping("/manageusers")
+    public String manageuser(HttpServletRequest request, Model model) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/";
+        }
+
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        ArrayList<Utente> users = new ArrayList<>();
+        for(Utente user : userRepository.findAll()){
+            if( user instanceof Researcher || user instanceof Supervisor) {
+                users.add(user);
+            }
+        }
+        model.addAttribute("users",users);
+        model.addAttribute("username", cookie.getValue());
+        return "manageusers";
+    }
+
+    @RequestMapping("/newuser")
+    public String newuser(HttpServletRequest request, Model model) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("username", cookie.getValue());
+        return "newuser";
+    }
+
+    //da implementare
+    @PostMapping("/createUser")
+    public String createUser(@RequestParam String username, @RequestParam String password,
+                             @RequestParam String name, @RequestParam String surname,
+                             @RequestParam String cf, @RequestParam String userType) {
+        System.out.println(username);
+        return "redirect:/manageuser";
+    }
+
+    @RequestMapping("/manageprojects")
+    public String manageproject(HttpServletRequest request, Model model) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        model.addAttribute("projects", projectRepository.findAll());
+        model.addAttribute("username", cookie.getValue());
+        return "manageprojects";
+    }
+
+    @RequestMapping("/newproject")
+    public String newproject(HttpServletRequest request, Model model) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/";
+        }
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        ArrayList<Supervisor> users = new ArrayList<>();
+        for(Utente user : userRepository.findAll()){
+            if(user instanceof Supervisor) {
+                users.add((Supervisor) user);
+            }
+        }
+        model.addAttribute("supervisors", users);
+        model.addAttribute("username", cookie.getValue());
+        return "newproject";
+    }
+
+    //da implementare
+    @PostMapping("/createProject")
+    public String createProject(@RequestParam(name="title")String title, @RequestParam(name="cup")String cup, @RequestParam(name="cup")String code, @RequestParam(name="denominiazioneSoggetto")String denominiazioneSoggetto, @RequestParam(name="cfSoggetto")String cfSoggetto, @RequestParam(name="supervisor")Long supervisor // ID del supervisore scelto
+    ) {
+        System.out.println(supervisor);
+        return "redirect:/manageprojects";
     }
 
     @RequestMapping("/index")

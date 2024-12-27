@@ -11,6 +11,9 @@
             color: #2c3e50;
             margin: 0;
             padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Contenitore del messaggio di benvenuto */
@@ -43,7 +46,6 @@
             flex-grow: 1; /* Rimuovere 'auto' */
         }
 
-
         .welcome-container .back-button:hover {
             background-color: #2980b9;
         }
@@ -62,6 +64,37 @@
             background-color: #c0392b;
         }
 
+        /* Stile per i tasti centrali */
+        .button-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .button-container a {
+            display: block;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        .button-container a:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 
@@ -69,6 +102,11 @@
 <div class="welcome-container">
     <h1>Welcome ADMINISTRATOR</h1>
     <a href="/logout" class="logout-button">Logout</a>
+</div>
+
+<div class="button-container">
+    <a href="/manageusers">Gestione Utenti</a>
+    <a href="/manageprojects">Gestione Progetti</a>
 </div>
 </body>
 </html>

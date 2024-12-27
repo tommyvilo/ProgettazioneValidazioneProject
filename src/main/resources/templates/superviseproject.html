@@ -43,7 +43,6 @@
             flex-grow: 1; /* Rimuovere 'auto' */
         }
 
-
         .welcome-container .back-button:hover {
             background-color: #2980b9;
         }
@@ -143,8 +142,9 @@
 
         .save-button {
             position: absolute;
-            top: 20px;
+            top: 50%;
             right: 20px;
+            transform: translateY(-50%);
             background-color: #27ae60;
             color: white;
             padding: 10px 20px;
@@ -157,6 +157,12 @@
         .save-button:hover {
             background-color: #219150;
         }
+
+        .table-title {
+            font-size: 20px;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -168,37 +174,38 @@
 </div>
 
 <form action="saveProjectResearcher">
-<div class="project-info">
-    <h2 th:text="${project.getTitle()}">Project Title</h2>
-    <p><strong>Project CUP:</strong> <span th:text="${project.getCup()}">Project description goes here.</span></p>
-    <p><strong>Funding Agency:</strong> <span th:text="${project.getDenominazioneSoggetto()}">Start date here</span></p>
-    <button id="save-button" class="save-button" >Save Changes</button>
-</div>
+    <div class="project-info">
+        <h2 th:text="${project.getTitle()}">Project Title</h2>
+        <p><strong>Project CUP:</strong> <span th:text="${project.getCup()}">Project description goes here.</span></p>
+        <p><strong>Funding Agency:</strong> <span th:text="${project.getDenominazioneSoggetto()}">Start date here</span></p>
+        <button id="save-button" class="save-button">Save Changes</button>
+    </div>
 
-<div class="filter-container">
-    <input type="text" id="search-bar" class="search-bar" placeholder="Search by surname..." oninput="filterTable()" />
-</div>
+    <div class="filter-container">
+        <input type="text" id="search-bar" class="search-bar" placeholder="Search by surname..." oninput="filterTable()" />
+    </div>
 
-<div class="table-container">
-    <table id="researcher-table">
-        <thead>
-        <tr>
-            <th>Select</th>
-            <th>Researcher Name</th>
-            <th>Researcher Surname</th>
-            <th>Researcher Username</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="researcher : ${allResearcher}" th:attr="data-surname=${researcher.getSurname()}">
-            <td><input type="checkbox" th:value="${researcher.id}" onchange="reorderRows(); checkChanges();" name="idResearchers" /></td>
-            <td th:text="${researcher.getName()}"></td>
-            <td th:text="${researcher.getSurname()}"></td>
-            <td th:text="${researcher.getUsername()}"></td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+    <div class="table-container">
+        <div class="table-title">Project Researchers List</div>
+        <table id="researcher-table">
+            <thead>
+            <tr>
+                <th>Select</th>
+                <th>Researcher Name</th>
+                <th>Researcher Surname</th>
+                <th>Researcher Username</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="researcher : ${allResearcher}" th:attr="data-surname=${researcher.getSurname()}">
+                <td><input type="checkbox" th:value="${researcher.id}" onchange="reorderRows(); checkChanges();" name="idResearchers" /></td>
+                <td th:text="${researcher.getName()}"></td>
+                <td th:text="${researcher.getSurname()}"></td>
+                <td th:text="${researcher.getUsername()}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </form>
 
 </body>
@@ -268,7 +275,6 @@
 
         document.getElementById('save-button').style.display = changesMade ? 'block' : 'none';
     }
-
 
     function saveChanges() {
         if (changesMade) {

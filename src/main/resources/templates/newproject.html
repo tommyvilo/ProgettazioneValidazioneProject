@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Project - Spring-MVC Application</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        /* Impostazioni generali */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0ebf5;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Contenitore del messaggio di benvenuto */
+        .welcome-container {
+            background-color: #f7fbff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 2px solid #34495e;
+        }
+
+        .welcome-container .back-button {
+            position: absolute;
+            left: 40px;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .welcome-container h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #34495e;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .welcome-container .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        .logout-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Stile per il form di creazione progetto */
+        .project-form-container {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f7fbff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-form-container h2 {
+            text-align: center;
+            color: #34495e;
+        }
+
+        .project-form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .project-form-container .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-form-container label {
+            font-weight: bold;
+            color: #2c3e50;
+            width: 40%;
+        }
+
+        .project-form-container input,
+        .project-form-container select,
+        .project-form-container button {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 55%;
+        }
+
+        .project-form-container button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        .project-form-container button:hover {
+            background-color: #2980b9;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="welcome-container">
+    <a href="/manageprojects" class="back-button">Go back</a>
+    <h1>Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
+    <a href="/logout" class="logout-button">Logout</a>
+</div>
+
+<div class="project-form-container">
+    <h2>Create New Project</h2>
+    <form action="/createProject" method="post">
+        <div class="form-group">
+            <label for="title">Project Title:</label>
+            <input type="text" id="title" name="title" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cup">CUP:</label>
+            <input type="text" id="cup" name="cup" required />
+        </div>
+
+        <div class="form-group">
+            <label for="code">Code:</label>
+            <input type="text" id="code" name="code" required />
+        </div>
+
+        <div class="form-group">
+            <label for="denominiazioneSoggetto">Denominazione Soggetto:</label>
+            <input type="text" id="denominiazioneSoggetto" name="denominiazioneSoggetto" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cfSoggetto">CF Soggetto:</label>
+            <input type="text" id="cfSoggetto" name="cfSoggetto" required />
+        </div>
+
+        <div class="form-group">
+            <label for="supervisor">Supervisor:</label>
+            <select id="supervisor" name="supervisor" required>
+                <option value="" disabled selected>Select Supervisor</option>
+                <tr th:each="supervisor : ${supervisors}">
+                    <option th:value="${supervisor.id}" th:text="${supervisor.name} + ' ' + ${supervisor.surname}"></option>
+                </tr>
+            </select>
+        </div>
+
+        <button type="submit" style="margin-right: auto; margin-left: auto;">Submit</button>
+    </form>
+</div>
+
+</body>
+</html>
+w
