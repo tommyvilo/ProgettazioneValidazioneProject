@@ -6,9 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long> {
     Iterable<WorkingTime> findByDateAndResearcher(LocalDate date, Researcher researcher);
+
+    Iterable<WorkingTime> findByResearcher(Researcher researcher);
+
+    void deleteByProjectAndResearcher(Project project, Researcher researcher);
 
     @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.researcher=?2 ")
     Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Researcher researcher);

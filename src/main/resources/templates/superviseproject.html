@@ -175,6 +175,7 @@
 
 <form action="saveProjectResearcher">
     <div class="project-info">
+        <input type="hidden" name="projectId" th:value="${project.getId()}">
         <h2 th:text="${project.getTitle()}">Project Title</h2>
         <p><strong>Project CUP:</strong> <span th:text="${project.getCup()}">Project description goes here.</span></p>
         <p><strong>Funding Agency:</strong> <span th:text="${project.getDenominazioneSoggetto()}">Start date here</span></p>

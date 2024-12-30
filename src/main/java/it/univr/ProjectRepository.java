@@ -10,7 +10,9 @@ public interface ProjectRepository extends CrudRepository<Project, Long>{
     @Query("select pj.researchers from Project pj where pj.id=?1")
     Iterable<Researcher> findResearchersByProjectId(long id);
 
-    Iterable<Project> findAllByResearchersContains(Researcher byUsername);
+    Iterable<Project> findAllByResearchersContains(Researcher researcher);
+
     Project findById(long id);
+
     Project findByTitle(String username);
 }

@@ -21,6 +21,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -226,9 +227,19 @@ public class TimeTrackingController {
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
         LocalDate date = LocalDate.now();
 
+        for(Project project : projectRepository.findAllByResearchersContains(researcher)){
+            if (wtRepository.getWorkingTimeByProjectAndResearcherAndDate(project,researcher,date)==null){
+                wtRepository.save(new WorkingTime(researcher,project,date,0,false,false));
+            }
+        }
+
         model.addAttribute("hours", wtRepository.findByDateAndResearcher(date,researcher));
         model.addAttribute("username", cookie.getValue());
-        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave()); //Se null (ore giornaliere non ancora inserite), lo vede come false
+        if(wtRepository.getTopByResearcherAndDate(researcher, date)==null){
+            model.addAttribute("status",false);
+        }else{
+            model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
+        }
         model.addAttribute("isHoliday",isHoliday(date));
         return "researcher";
     }
@@ -257,6 +268,51 @@ public class TimeTrackingController {
             }
         }
         return "redirect:/researcher";
+    }
+
+    @RequestMapping("/deleteUser")
+    public String deleteUser(HttpServletRequest request, @RequestParam(name="id") Long id) {
+        if(!isValidUrl("administrator",request)){
+            return "redirect:/";
+        }
+        Researcher researcher = (Researcher)userRepository.findById(id).orElse(null);
+
+        for(WorkingTime wt: wtRepository.findByResearcher(researcher)){
+            wtRepository.deleteById(wt.getId());
+        }
+
+        for(Project pj: projectRepository.findAllByResearchersContains(researcher)){
+            List<Researcher> researchers = pj.getResearchers();
+            researchers.remove(researcher);
+            pj.setResearchers(researchers);
+            projectRepository.save(pj);
+        }
+
+        userRepository.deleteById(id);
+        return "redirect:/administrator";
+    }
+
+    @RequestMapping("/saveProjectResearcher")
+    public String saveProjectResearcher(HttpServletRequest request, Model model, @RequestParam(name="idResearchers", required=true) List<Long> ids, @RequestParam(name="projectId", required=true) Long projectId) {
+        Project project = projectRepository.findById(projectId).orElse(null);
+
+        List<Long> currentResearchersProjectIds = project.getResearchers().stream().map(Researcher::getId).toList();
+        List<Researcher> newResearchers = new ArrayList<>();
+
+        for(Long id : ids){
+            Researcher current = (Researcher) userRepository.findById(id).orElse(null);
+            if (currentResearchersProjectIds.contains(id) && !ids.contains(id)) {
+                wtRepository.deleteByProjectAndResearcher(project,current);
+            }
+            else{
+                newResearchers.add(current);
+            }
+        }
+
+        project.setResearchers(newResearchers);
+        projectRepository.save(project);
+
+        return "redirect:/projectmanagement?id="+projectId;
     }
 
     @RequestMapping("/downloadtimesheet")
@@ -372,13 +428,17 @@ public class TimeTrackingController {
         return "newuser";
     }
 
-    //da implementare
     @PostMapping("/createUser")
-    public String createUser(@RequestParam String username, @RequestParam String password,
-                             @RequestParam String name, @RequestParam String surname,
-                             @RequestParam String cf, @RequestParam String userType) {
-        System.out.println(username);
-        return "redirect:/manageuser";
+    public String createUser(@RequestParam(name="username") String username, @RequestParam(name="password") String password,
+                             @RequestParam(name="name") String name, @RequestParam(name="surname") String surname,
+                             @RequestParam(name="cf") String cf, @RequestParam(name="userType") String userType) {
+
+        if(userType.equals("Supervisor")){
+            userRepository.save(new Supervisor(username,password,name,surname,cf));
+        } else{
+            userRepository.save(new Researcher(username,password,name,surname,cf));
+        }
+        return "redirect:/manageusers";
     }
 
     @RequestMapping("/manageprojects")
@@ -409,10 +469,14 @@ public class TimeTrackingController {
         return "newproject";
     }
 
-    //da implementare
     @PostMapping("/createProject")
-    public String createProject(@RequestParam(name="title")String title, @RequestParam(name="cup")String cup, @RequestParam(name="cup")String code, @RequestParam(name="denominiazioneSoggetto")String denominiazioneSoggetto, @RequestParam(name="cfSoggetto")String cfSoggetto, @RequestParam(name="supervisor")Long supervisor // ID del supervisore scelto
+    public String createProject(@RequestParam(name="title") String title, @RequestParam(name="cup") String cup,
+                                @RequestParam(name="code") String code, @RequestParam(name="denominazioneSoggetto") String denominazioneSoggetto,
+                                @RequestParam(name="cfSoggetto") String cfSoggetto, @RequestParam(name="supervisor") Long supervisor // ID del supervisore scelto
     ) {
+        Project newProject = new Project(title,cup,code,denominazioneSoggetto,cfSoggetto);
+        newProject.setSupervisor((Supervisor) userRepository.findById(supervisor).orElse(null));
+        projectRepository.save(newProject);
         return "redirect:/manageprojects";
     }
 
