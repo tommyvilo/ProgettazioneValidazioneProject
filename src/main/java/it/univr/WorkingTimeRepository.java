@@ -11,11 +11,14 @@ import java.util.Optional;
 public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long> {
     Iterable<WorkingTime> findByDateAndResearcher(LocalDate date, Researcher researcher);
 
+    @Query("select wt.workedHours from WorkingTime wt where wt.date=?1 and wt.researcher=?2 and wt.project=?3")
+    Double findByDateAndResearcherAndProject(LocalDate date, Researcher researcher, Project project);
+
     Iterable<WorkingTime> findByResearcher(Researcher researcher);
 
     void deleteByProjectAndResearcher(Project project, Researcher researcher);
 
-    @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.researcher=?2 ")
+    @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.researcher=?2")
     Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Researcher researcher);
 
     Iterable<WorkingTime> findWorkingTimesByResearcherAndProject(Researcher researcher, Project project);

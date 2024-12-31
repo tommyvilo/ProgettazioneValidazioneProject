@@ -18,11 +18,15 @@ import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.YearMonth;
+import java.util.*;
+
+import com.lowagie.text.*;
+import com.lowagie.text.Font;
+import com.lowagie.text.pdf.*;
+
+import java.awt.*;
+import java.io.FileOutputStream;
 import java.util.List;
-
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 
 @Controller
 public class TimeTrackingController {
@@ -33,6 +37,8 @@ public class TimeTrackingController {
     private ProjectRepository projectRepository;
     @Autowired
     private WorkingTimeRepository wtRepository;
+    @Autowired
+    private WorkingTimeRepository workingTimeRepository;
 
     @PostConstruct
     public void init() {
@@ -275,6 +281,7 @@ public class TimeTrackingController {
         if(!isValidUrl("administrator",request)){
             return "redirect:/";
         }
+
         Researcher researcher = (Researcher)userRepository.findById(id).orElse(null);
 
         for(WorkingTime wt: wtRepository.findByResearcher(researcher)){
@@ -329,6 +336,190 @@ public class TimeTrackingController {
         model.addAttribute("username", cookie.getValue());
         return "downloadtimesheet";
     }
+
+    @RequestMapping("/downloadMonthlyTimesheet")
+    public String downloadMonthlyTimesheet(HttpServletRequest request, Model model, @RequestParam(name = "idProject", required = true) long idProject,
+                                           @RequestParam(name = "date", required = true) String monthYear,
+                                           @RequestParam(name = "researcherUser", required = true) String username) {
+        Cookie cookie = getCookieByName(request, "userLoggedIn");
+
+        int month = Integer.parseInt(monthYear.split("/")[0]);
+        int year = Integer.parseInt(monthYear.split("/")[1]);
+        YearMonth yM = YearMonth.of(year, month);
+        int totalDays = yM.lengthOfMonth();
+        Researcher researcher = (Researcher)userRepository.findByUsername(username);
+        Project project = projectRepository.findById(idProject);
+        Supervisor supervisor = project.getSupervisor();
+        Map<Integer,Double> totalHoursPerDay = new HashMap<>(); //giorno : totale ore lavorate
+
+
+
+        String outputFilePath = "TimeTrackingReport.pdf";
+
+        try {
+            // Creazione del documento
+            Document document = new Document(PageSize.A4.rotate()); // Orientamento orizzontale
+            PdfWriter.getInstance(document, new FileOutputStream(outputFilePath));
+
+            document.open();
+
+            // Titolo principale e mese/anno
+            Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);
+            Paragraph title = new Paragraph("TIMESHEET PER RENDICONTAZIONE PERSONALE", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            Font dateFont = new Font(Font.HELVETICA, 12, Font.NORMAL);
+            Paragraph monthYearParagraph = new Paragraph("Mese: " + month + " / Anno: " + year, dateFont);
+            monthYearParagraph.setAlignment(Element.ALIGN_CENTER);
+            document.add(monthYearParagraph);
+
+            // Tabella dati progetto
+            PdfPTable projectTable = new PdfPTable(2);
+            projectTable.setWidthPercentage(100);
+            projectTable.setSpacingBefore(10f);
+            Font headerFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+            Font normalFont = new Font(Font.HELVETICA, 10);
+
+            projectTable.addCell(new PdfPCell(new Phrase("Titolo del progetto", headerFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("PRIN 2022: Smartitude - Automated Testing and Security Assessment of Smart Contracts", normalFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("CUP del progetto", headerFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("B53D23012750006", normalFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("Codice del progetto", headerFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("202233YFCJ", normalFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("Denominazione soggetto", headerFont)));
+            projectTable.addCell(new PdfPCell(new Phrase("Università degli Studi di Verona - Dipartimento di Informatica", normalFont)));
+
+
+
+            // Riga "Figura professionale" in una tabella
+            PdfPTable professionalRoleTable = new PdfPTable(1);
+            professionalRoleTable.setWidthPercentage(100);
+            professionalRoleTable.setSpacingBefore(0f);
+            PdfPCell professionalRoleCell = new PdfPCell(new Phrase("Figura professionale", headerFont));
+            professionalRoleCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            professionalRoleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            professionalRoleTable.addCell(professionalRoleCell);
+
+            // Tabella informazioni ricercatore
+            PdfPTable personalInfoTable = new PdfPTable(4); // 4 colonne per nome, cognome, codice fiscale, ore totali
+            personalInfoTable.setWidthPercentage(100);
+            personalInfoTable.setSpacingBefore(0f);
+
+            personalInfoTable.addCell(new PdfPCell(new Phrase("Nome", headerFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getName(), normalFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase("Cognome", headerFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getSurname(), normalFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase("Codice fiscale", headerFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getCf(), normalFont)));
+            personalInfoTable.addCell(new PdfPCell(new Phrase("Ore totali rendicontate", headerFont)));
+            //ORE TOTALI AGGIUNTE ALLA FINE
+
+            // Tabella ore giornaliere
+            float[] columnWidths = new float[totalDays+2];
+            columnWidths[0] = 2f; // Colonna "Day"
+            for (int i = 1; i < totalDays + 1; i++) {
+                columnWidths[i] = 1f;
+            }
+            columnWidths[totalDays+1] = 1.5f; // Totale
+
+            PdfPTable thisProjectTable = new PdfPTable(columnWidths);
+            thisProjectTable.setWidthPercentage(100);
+            thisProjectTable.setSpacingBefore(20f);
+
+            // Intestazione della tabella
+            thisProjectTable.addCell(new PdfPCell(new Phrase("Day", headerFont)));
+            for (int i = 1; i <= totalDays; i++) {
+                thisProjectTable.addCell(new PdfPCell(new Phrase(getNameDay(year,month,i)+" "+String.valueOf(i), headerFont)));
+            }
+            thisProjectTable.addCell(new PdfPCell(new Phrase("Totale", headerFont)));
+
+            // Riga "Attività svolta sul progetto"
+            thisProjectTable.addCell(new PdfPCell(new Phrase("Attività svolta sul progetto", normalFont)));
+            double counterWorkedHoursP = 0;
+            for (int i = 1; i <= totalDays; i++) {
+                double hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(LocalDate.of(year,month,i),researcher,project)).orElse(0.0);
+                thisProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont)));
+                counterWorkedHoursP += hoursWorkedThisDay;
+                totalHoursPerDay.put(i, hoursWorkedThisDay);
+            }
+            thisProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), normalFont)));
+
+            PdfPTable otherProject = new PdfPTable(1);
+            otherProject.setWidthPercentage(100);
+            otherProject.setSpacingBefore(0f);
+
+            // Riga "Other MUR Projects"
+            otherProject.addCell(new PdfPCell(new Phrase("Attività svolta su altri progetti MUR", normalFont)));
+
+            PdfPTable otherProjectTable = new PdfPTable(columnWidths);
+            otherProjectTable.setWidthPercentage(100);
+            otherProjectTable.setSpacingBefore(0f);
+
+            List<Project> otherProjects = projectRepository.findAllByResearchersContains(researcher);
+            otherProjects.remove(project);
+            for (Project pjt : otherProjects){
+                otherProjectTable.addCell(new PdfPCell(new Phrase(pjt.getTitle(), normalFont)));
+                counterWorkedHoursP = 0;
+                for (int i = 1; i <= totalDays; i++) {
+                    double hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(LocalDate.of(year,month,i),researcher,pjt)).orElse(0.0);
+                    otherProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont)));
+                    counterWorkedHoursP += hoursWorkedThisDay;
+                    totalHoursPerDay.put(i, totalHoursPerDay.get(i)+hoursWorkedThisDay);
+                }
+                otherProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), normalFont)));
+            }
+
+            PdfPTable endProjectTable = new PdfPTable(columnWidths);
+            endProjectTable.setWidthPercentage(100);
+            endProjectTable.setSpacingBefore(0f);
+
+            // Riga totale ore
+            endProjectTable.addCell(new PdfPCell(new Phrase("TOTALE ORE", headerFont)));
+            double sumHours = 0;
+            for (int i = 1; i <= 31; i++) {
+                endProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(totalHoursPerDay.get(i)), normalFont)));
+                sumHours += totalHoursPerDay.get(i);
+            }
+            endProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(sumHours), headerFont)));
+
+            personalInfoTable.addCell(new PdfPCell(new Phrase(String.valueOf(sumHours), normalFont))); //AGGIUNTE ORE TOTALI
+
+            // Sezione firme
+            PdfPTable signatureTable = new PdfPTable(2);
+            signatureTable.setWidthPercentage(100);
+            signatureTable.setSpacingBefore(30f);
+
+            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal dipendente:\n"+researcher.getName() + " " + researcher.getSurname() + "\nData:"+LocalDate.now(), normalFont)));
+            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal responsabile del Dipartimento:\nProf. "+supervisor.getName() + " " + supervisor.getSurname() + "\nData:"+LocalDate.now(), normalFont)));
+
+            document.add(projectTable);
+            document.add(professionalRoleTable);
+            document.add(personalInfoTable);
+            document.add(thisProjectTable);
+            document.add(otherProject);
+            document.add(otherProjectTable);
+            document.add(endProjectTable);
+
+            document.add(signatureTable);
+
+            // Chiusura del documento
+            document.close();
+
+            System.out.println("PDF generato con successo: " + outputFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        model.addAttribute("username", cookie.getValue());
+
+        if (isValidUrl("researcher", request)) {
+            return "redirect:/downloadtimesheet";
+        }
+        return "redirect:/validationtimesheet?id="+idProject;
+    }
+
+
 
     @RequestMapping("/validationtimesheet")
     public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
@@ -638,7 +829,30 @@ public class TimeTrackingController {
         return listWts;
     }
 
+    private static String getNameDay(int anno, int mese, int giorno) {
+        LocalDate data = LocalDate.of(anno, mese, giorno);
 
+        DayOfWeek giornoSettimana = data.getDayOfWeek();
+
+        switch (giornoSettimana) {
+            case MONDAY:
+                return "Lun";
+            case TUESDAY:
+                return "Mar";
+            case WEDNESDAY:
+                return "Mer";
+            case THURSDAY:
+                return "Gio";
+            case FRIDAY:
+                return "Ven";
+            case SATURDAY:
+                return "Sab";
+            case SUNDAY:
+                return "Dom";
+            default:
+                return "";
+        }
+    }
 
 
     /*@PostMapping("/createSupervisor")
