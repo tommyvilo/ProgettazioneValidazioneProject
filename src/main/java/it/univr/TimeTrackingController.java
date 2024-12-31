@@ -14,6 +14,8 @@ import it.univr.User.Administrator;
 import it.univr.User.Researcher;
 import it.univr.User.Supervisor;
 import it.univr.User.Utente;
+
+import java.io.*;
 import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.time.Month;
@@ -25,7 +27,6 @@ import com.lowagie.text.Font;
 import com.lowagie.text.pdf.*;
 
 import java.awt.*;
-import java.io.FileOutputStream;
 import java.util.List;
 
 @Controller
@@ -338,9 +339,9 @@ public class TimeTrackingController {
     }
 
     @RequestMapping("/downloadMonthlyTimesheet")
-    public String downloadMonthlyTimesheet(HttpServletRequest request, Model model, @RequestParam(name = "idProject", required = true) long idProject,
+    public void downloadMonthlyTimesheet(HttpServletRequest request, HttpServletResponse response, Model model, @RequestParam(name = "idProject", required = true) long idProject,
                                            @RequestParam(name = "date", required = true) String monthYear,
-                                           @RequestParam(name = "researcherUser", required = true) String username) {
+                                           @RequestParam(name = "researcherUser", required = true) String username) throws IOException {
         Cookie cookie = getCookieByName(request, "userLoggedIn");
 
         int month = Integer.parseInt(monthYear.split("/")[0]);
@@ -352,9 +353,7 @@ public class TimeTrackingController {
         Supervisor supervisor = project.getSupervisor();
         Map<Integer,Double> totalHoursPerDay = new HashMap<>(); //giorno : totale ore lavorate
 
-
-
-        String outputFilePath = "TimeTrackingReport.pdf";
+        String outputFilePath = researcher.getName()+researcher.getSurname()+"_"+String.valueOf(month)+"-"+String.valueOf(year)+".pdf";
 
         try {
             // Creazione del documento
@@ -369,26 +368,44 @@ public class TimeTrackingController {
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
-            Font dateFont = new Font(Font.HELVETICA, 12, Font.NORMAL);
-            Paragraph monthYearParagraph = new Paragraph("Mese: " + month + " / Anno: " + year, dateFont);
+            // Ottieni il mese dalla data
+            Month meseEnum = LocalDate.of(year,month,1).getMonth();
+
+            Font dateFont = new Font(Font.HELVETICA, 10, Font.NORMAL);
+            Paragraph monthYearParagraph = new Paragraph(meseEnum.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ITALIAN) + " " + year, dateFont);
             monthYearParagraph.setAlignment(Element.ALIGN_CENTER);
             document.add(monthYearParagraph);
 
             // Tabella dati progetto
-            PdfPTable projectTable = new PdfPTable(2);
+            float[] projectTableWidths = new float[2];
+            projectTableWidths[0] = 1f; //Titoli
+            projectTableWidths[1] = 3f; //Descrizione del progetto
+
+            PdfPTable projectTable = new PdfPTable(projectTableWidths);
             projectTable.setWidthPercentage(100);
             projectTable.setSpacingBefore(10f);
-            Font headerFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+            Font headerFont = new Font(Font.HELVETICA, 10, Font.BOLD);
             Font normalFont = new Font(Font.HELVETICA, 10);
 
-            projectTable.addCell(new PdfPCell(new Phrase("Titolo del progetto", headerFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("PRIN 2022: Smartitude - Automated Testing and Security Assessment of Smart Contracts", normalFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("CUP del progetto", headerFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("B53D23012750006", normalFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("Codice del progetto", headerFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("202233YFCJ", normalFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("Denominazione soggetto", headerFont)));
-            projectTable.addCell(new PdfPCell(new Phrase("Università degli Studi di Verona - Dipartimento di Informatica", normalFont)));
+            PdfPCell cell = new PdfPCell(new Phrase("Titolo del progetto", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            projectTable.addCell(cell);
+            projectTable.addCell(new PdfPCell(new Phrase(project.getTitle(), normalFont)));
+
+            cell = new PdfPCell(new Phrase("CUP del progetto", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            projectTable.addCell(cell);
+            projectTable.addCell(new PdfPCell(new Phrase(project.getCup(), normalFont)));
+
+            cell = new PdfPCell(new Phrase("Codice del progetto", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            projectTable.addCell(cell);
+            projectTable.addCell(new PdfPCell(new Phrase(project.getCode(), normalFont)));
+
+            cell = new PdfPCell(new Phrase("Denominazione Soggetto", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            projectTable.addCell(cell);
+            projectTable.addCell(new PdfPCell(new Phrase(project.getDenominazioneSoggetto(), normalFont)));
 
 
 
@@ -397,8 +414,9 @@ public class TimeTrackingController {
             professionalRoleTable.setWidthPercentage(100);
             professionalRoleTable.setSpacingBefore(0f);
             PdfPCell professionalRoleCell = new PdfPCell(new Phrase("Figura professionale", headerFont));
-            professionalRoleCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            professionalRoleCell.setHorizontalAlignment(Element.ALIGN_LEFT);
             professionalRoleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            professionalRoleCell.setBackgroundColor(Color.GRAY);
             professionalRoleTable.addCell(professionalRoleCell);
 
             // Tabella informazioni ricercatore
@@ -406,18 +424,29 @@ public class TimeTrackingController {
             personalInfoTable.setWidthPercentage(100);
             personalInfoTable.setSpacingBefore(0f);
 
-            personalInfoTable.addCell(new PdfPCell(new Phrase("Nome", headerFont)));
+            cell = new PdfPCell(new Phrase("Nome", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            personalInfoTable.addCell(cell);
             personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getName(), normalFont)));
-            personalInfoTable.addCell(new PdfPCell(new Phrase("Cognome", headerFont)));
+
+            cell = new PdfPCell(new Phrase("Cognome", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            personalInfoTable.addCell(cell);
             personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getSurname(), normalFont)));
-            personalInfoTable.addCell(new PdfPCell(new Phrase("Codice fiscale", headerFont)));
+
+            cell = new PdfPCell(new Phrase("Codice Fiscale", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            personalInfoTable.addCell(cell);
             personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getCf(), normalFont)));
-            personalInfoTable.addCell(new PdfPCell(new Phrase("Ore totali rendicontate", headerFont)));
+
+            cell = new PdfPCell(new Phrase("Ore Totali Rendicontate", headerFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            personalInfoTable.addCell(cell);
             //ORE TOTALI AGGIUNTE ALLA FINE
 
             // Tabella ore giornaliere
             float[] columnWidths = new float[totalDays+2];
-            columnWidths[0] = 2f; // Colonna "Day"
+            columnWidths[0] = 3.8f; // Colonna "Day"
             for (int i = 1; i < totalDays + 1; i++) {
                 columnWidths[i] = 1f;
             }
@@ -427,47 +456,119 @@ public class TimeTrackingController {
             thisProjectTable.setWidthPercentage(100);
             thisProjectTable.setSpacingBefore(20f);
 
+            Font dayFont = new Font(Font.HELVETICA, 8);
+            Font totaleFont = new Font(Font.HELVETICA, 8, Font.BOLD);
+            normalFont = new Font(Font.HELVETICA, 8);
+
             // Intestazione della tabella
-            thisProjectTable.addCell(new PdfPCell(new Phrase("Day", headerFont)));
+            cell = new PdfPCell(new Phrase("GIORNO", dayFont));
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            thisProjectTable.addCell(cell);
             for (int i = 1; i <= totalDays; i++) {
-                thisProjectTable.addCell(new PdfPCell(new Phrase(getNameDay(year,month,i)+" "+String.valueOf(i), headerFont)));
+                cell = new PdfPCell(new Phrase(getNameDay(year,month,i)+" "+String.valueOf(i), dayFont));
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                thisProjectTable.addCell(cell);
             }
-            thisProjectTable.addCell(new PdfPCell(new Phrase("Totale", headerFont)));
+            cell = new PdfPCell(new Phrase("TOTAL", totaleFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            thisProjectTable.addCell(cell);
 
             // Riga "Attività svolta sul progetto"
-            thisProjectTable.addCell(new PdfPCell(new Phrase("Attività svolta sul progetto", normalFont)));
+            cell = new PdfPCell(new Phrase("Attività svolta sul progetto", normalFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            thisProjectTable.addCell(cell);
             double counterWorkedHoursP = 0;
             for (int i = 1; i <= totalDays; i++) {
-                double hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(LocalDate.of(year,month,i),researcher,project)).orElse(0.0);
-                thisProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont)));
+                LocalDate currentDate = LocalDate.of(year,month,i);
+                double hoursWorkedThisDay = 0.0;
+                if(isHoliday(currentDate)) {
+                    cell = new PdfPCell(new Phrase());
+                    cell.setBackgroundColor(Color.GRAY);
+                } else {
+                    hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(currentDate, researcher, project)).orElse(0.0);
+                    if (hoursWorkedThisDay == 0.0) {
+                        cell = new PdfPCell(new Phrase());
+                    } else {
+                        if(isInteger(hoursWorkedThisDay)) {
+                            cell = new PdfPCell(new Phrase(String.valueOf((int) hoursWorkedThisDay), normalFont));
+                        } else {
+                            cell = new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont));
+                        }
+                    }
+                    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                }
+                thisProjectTable.addCell(cell);
                 counterWorkedHoursP += hoursWorkedThisDay;
                 totalHoursPerDay.put(i, hoursWorkedThisDay);
             }
-            thisProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), normalFont)));
+            if(isInteger(counterWorkedHoursP)) {
+                cell = new PdfPCell(new Phrase(String.valueOf((int) counterWorkedHoursP), totaleFont));
+            } else {
+                cell = new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), totaleFont));
+            }
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            thisProjectTable.addCell(cell);
 
             PdfPTable otherProject = new PdfPTable(1);
             otherProject.setWidthPercentage(100);
             otherProject.setSpacingBefore(0f);
 
             // Riga "Other MUR Projects"
-            otherProject.addCell(new PdfPCell(new Phrase("Attività svolta su altri progetti MUR", normalFont)));
+            cell = new PdfPCell(new Phrase("Attività svolta su altri progetti MUR", normalFont));
+            cell.setBackgroundColor(Color.GRAY);
+            otherProject.addCell(cell);
 
             PdfPTable otherProjectTable = new PdfPTable(columnWidths);
             otherProjectTable.setWidthPercentage(100);
             otherProjectTable.setSpacingBefore(0f);
 
+            Font projectFont = new Font(Font.HELVETICA, 8, Font.ITALIC);
+
             List<Project> otherProjects = projectRepository.findAllByResearchersContains(researcher);
             otherProjects.remove(project);
             for (Project pjt : otherProjects){
-                otherProjectTable.addCell(new PdfPCell(new Phrase(pjt.getTitle(), normalFont)));
+                cell = new PdfPCell(new Phrase(pjt.getTitle(), projectFont));
+                cell.setBackgroundColor(Color.LIGHT_GRAY);
+                otherProjectTable.addCell(cell);
                 counterWorkedHoursP = 0;
                 for (int i = 1; i <= totalDays; i++) {
-                    double hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(LocalDate.of(year,month,i),researcher,pjt)).orElse(0.0);
-                    otherProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont)));
+                    LocalDate currentDate = LocalDate.of(year,month,i);
+                    double hoursWorkedThisDay = 0.0;
+                    if(isHoliday(currentDate)) {
+                        cell = new PdfPCell(new Phrase());
+                        cell.setBackgroundColor(Color.GRAY);
+                    } else {
+                        hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt)).orElse(0.0);
+                        if (hoursWorkedThisDay == 0.0) {
+                            cell = new PdfPCell(new Phrase());
+                        } else {
+                            if(isInteger(hoursWorkedThisDay)) {
+                                cell = new PdfPCell(new Phrase(String.valueOf((int) hoursWorkedThisDay), normalFont));
+                            } else {
+                                cell = new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont));
+                            }
+                        }
+                        cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+                        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    }
+                    otherProjectTable.addCell(cell);
                     counterWorkedHoursP += hoursWorkedThisDay;
                     totalHoursPerDay.put(i, totalHoursPerDay.get(i)+hoursWorkedThisDay);
                 }
-                otherProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), normalFont)));
+                if(isInteger(counterWorkedHoursP)) {
+                    cell = new PdfPCell(new Phrase(String.valueOf((int) counterWorkedHoursP), totaleFont));
+                } else {
+                    cell = new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), totaleFont));
+                }
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                otherProjectTable.addCell(cell);
             }
 
             PdfPTable endProjectTable = new PdfPTable(columnWidths);
@@ -475,14 +576,33 @@ public class TimeTrackingController {
             endProjectTable.setSpacingBefore(0f);
 
             // Riga totale ore
-            endProjectTable.addCell(new PdfPCell(new Phrase("TOTALE ORE", headerFont)));
+            cell = new PdfPCell(new Phrase("TOTAL", totaleFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            endProjectTable.addCell(cell);
             double sumHours = 0;
-            for (int i = 1; i <= 31; i++) {
-                endProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(totalHoursPerDay.get(i)), normalFont)));
+            for (int i = 1; i <= totalDays; i++) {
+                double totalHoursDay = totalHoursPerDay.get(i);
+                if(isInteger(totalHoursDay)) {
+                    cell = new PdfPCell(new Phrase(String.valueOf((int) totalHoursDay), totaleFont));
+                } else {
+                    cell = new PdfPCell(new Phrase(String.valueOf(totalHoursDay), totaleFont));
+                }
+                cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+                cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                endProjectTable.addCell(cell);
                 sumHours += totalHoursPerDay.get(i);
             }
-            endProjectTable.addCell(new PdfPCell(new Phrase(String.valueOf(sumHours), headerFont)));
+            if(isInteger(sumHours)) {
+                cell = new PdfPCell(new Phrase(String.valueOf((int) sumHours), totaleFont));
+            } else{
+                cell = new PdfPCell(new Phrase(String.valueOf(sumHours), totaleFont));
+            }
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            endProjectTable.addCell(cell);
 
+            normalFont = new Font(Font.HELVETICA, 10);
             personalInfoTable.addCell(new PdfPCell(new Phrase(String.valueOf(sumHours), normalFont))); //AGGIUNTE ORE TOTALI
 
             // Sezione firme
@@ -490,8 +610,8 @@ public class TimeTrackingController {
             signatureTable.setWidthPercentage(100);
             signatureTable.setSpacingBefore(30f);
 
-            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal dipendente:\n"+researcher.getName() + " " + researcher.getSurname() + "\nData:"+LocalDate.now(), normalFont)));
-            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal responsabile del Dipartimento:\nProf. "+supervisor.getName() + " " + supervisor.getSurname() + "\nData:"+LocalDate.now(), normalFont)));
+            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal dipendente:\n"+researcher.getName() + " " + researcher.getSurname() + "\nData: "+LocalDate.now(), normalFont)));
+            signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal responsabile del Dipartimento:\nProf. "+supervisor.getName() + " " + supervisor.getSurname() + "\nData: "+LocalDate.now(), normalFont)));
 
             document.add(projectTable);
             document.add(professionalRoleTable);
@@ -506,20 +626,32 @@ public class TimeTrackingController {
             // Chiusura del documento
             document.close();
 
-            System.out.println("PDF generato con successo: " + outputFilePath);
+            //System.out.println("PDF generato con successo: " + outputFilePath);
+
+            // Ora invia il file PDF come risposta HTTP
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + outputFilePath + "\"");
+
+            FileInputStream fileInputStream = new FileInputStream(outputFilePath);
+            OutputStream outStream = response.getOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fileInputStream.read(buffer)) > 0) {
+                outStream.write(buffer, 0, length);
+            }
+
+            fileInputStream.close();
+            outStream.flush();
+            outStream.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        model.addAttribute("username", cookie.getValue());
-
-        if (isValidUrl("researcher", request)) {
-            return "redirect:/downloadtimesheet";
-        }
-        return "redirect:/validationtimesheet?id="+idProject;
     }
 
-
+    private boolean isInteger(double value){
+        return value == (int) value;
+    }
 
     @RequestMapping("/validationtimesheet")
     public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
