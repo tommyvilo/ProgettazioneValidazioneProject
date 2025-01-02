@@ -1,12 +1,12 @@
 package it.univr;
 
-import it.univr.User.Researcher;
-import it.univr.User.Utente;
+import it.univr.Model.Project;
+import it.univr.Model.User.Researcher;
+import it.univr.Model.WorkingTime;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long> {
     Iterable<WorkingTime> findByDateAndResearcher(LocalDate date, Researcher researcher);

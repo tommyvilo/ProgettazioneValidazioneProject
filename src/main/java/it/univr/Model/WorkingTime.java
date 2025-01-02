@@ -1,9 +1,8 @@
-package it.univr;
+package it.univr.Model;
 
-import it.univr.User.Researcher;
+import it.univr.Model.User.Researcher;
 import jakarta.persistence.*;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 

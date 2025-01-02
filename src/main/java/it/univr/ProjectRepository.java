@@ -1,6 +1,7 @@
 package it.univr;
-import it.univr.User.Researcher;
-import it.univr.User.Supervisor;
+import it.univr.Model.Project;
+import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Supervisor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 

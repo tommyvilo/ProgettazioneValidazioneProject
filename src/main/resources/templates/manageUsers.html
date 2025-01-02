@@ -134,7 +134,7 @@
 </div>
 
 <div class="table-container">
-    <a href="/newuser" class="create-user-button">Create User</a>
+    <a href="/newUser" class="create-user-button">Create User</a>
     <table id="researcher-table">
         <thead>
         <tr>
@@ -152,7 +152,7 @@
             <td th:text="${user.getName()}"></td>
             <td th:text="${user.getSurname()}"></td>
             <td th:text="${user.getUsername()}"></td>
-            <td th:text="${user instanceof T(it.univr.User.Supervisor) ? 'Supervisor' : 'Researcher'}"></td>
+            <td th:text="${user instanceof T(it.univr.Model.User.Supervisor) ? 'Supervisor' : 'Researcher'}"></td>
             <td><a href="#">Manage User</a></td>
             <td><a th:href="@{/deleteUser(id=${user.id})}">Delete User</a></td>
         </tr>

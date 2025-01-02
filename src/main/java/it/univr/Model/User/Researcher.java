@@ -1,4 +1,4 @@
-package it.univr.User;
+package it.univr.Model.User;
 import jakarta.persistence.Entity;
 
 

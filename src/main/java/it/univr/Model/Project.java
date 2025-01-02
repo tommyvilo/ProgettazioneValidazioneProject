@@ -1,7 +1,7 @@
-package it.univr;
+package it.univr.Model;
 
-import it.univr.User.Researcher;
-import it.univr.User.Supervisor;
+import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Supervisor;
 import jakarta.persistence.*;
 
 import java.util.*;

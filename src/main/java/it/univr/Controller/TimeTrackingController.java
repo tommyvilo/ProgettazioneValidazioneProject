@@ -1,19 +1,20 @@
-package it.univr;
+package it.univr.Controller;
+import it.univr.*;
+import it.univr.Model.Project;
+import it.univr.Model.WorkingTime;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import it.univr.User.Administrator;
-import it.univr.User.Researcher;
-import it.univr.User.Supervisor;
-import it.univr.User.Utente;
+import it.univr.Model.User.Administrator;
+import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Supervisor;
+import it.univr.Model.User.Utente;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -38,8 +39,6 @@ public class TimeTrackingController {
     private ProjectRepository projectRepository;
     @Autowired
     private WorkingTimeRepository wtRepository;
-    @Autowired
-    private WorkingTimeRepository workingTimeRepository;
 
     @PostConstruct
     public void init() {
@@ -162,26 +161,14 @@ public class TimeTrackingController {
         wtRepository.save(w7);
     }
 
-    @PostMapping("/print")
-    public String print(){
-        for (Utente utente: userRepository.findAll()){
-            System.out.println(utente);
-
-        }
-
-        for (Project project: projectRepository.findAll()){
-            System.out.println(project);
-        }
-        return "login";
-    }
-
     @RequestMapping("/")
-    public String principale(HttpServletRequest request, HttpServletResponse response) {
+    public String rootPath(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             return "redirect:/index";
         }
-        return "login";}
+        return "login";
+    }
 
     @RequestMapping("/login")
     public String login(HttpServletRequest request, HttpServletResponse response) {
@@ -196,7 +183,8 @@ public class TimeTrackingController {
                 }
             }
         }
-        return "login";}
+        return "login";
+    }
 
     @RequestMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
@@ -211,138 +199,48 @@ public class TimeTrackingController {
                 }
             }
         }
-        return "redirect:/login";}
-
-    @RequestMapping("/supervisor")
-    public String supervisor(HttpServletRequest request, Model model) {
-
-        if(!isValidUrl("supervisor",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("projects", projectRepository.findAllBySupervisor((Supervisor)userRepository.findByUsername(cookie.getValue())));
-        model.addAttribute("username", cookie.getValue());
-        return "supervisor";
+        return "redirect:/login";
     }
 
-    @RequestMapping("/researcher")
-    public String researcher(HttpServletRequest request, Model model) {
-        if(!isValidUrl("researcher",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
-        LocalDate date = LocalDate.now();
-
-        for(Project project : projectRepository.findAllByResearchersContains(researcher)){
-            if (wtRepository.getWorkingTimeByProjectAndResearcherAndDate(project,researcher,date)==null){
-                wtRepository.save(new WorkingTime(researcher,project,date,0,false,false));
-            }
-        }
-
-        model.addAttribute("hours", wtRepository.findByDateAndResearcher(date,researcher));
-        model.addAttribute("username", cookie.getValue());
-        if(wtRepository.getTopByResearcherAndDate(researcher, date)==null){
-            model.addAttribute("status",false);
-        }else{
-            model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
-        }
-        model.addAttribute("isHoliday",isHoliday(date));
-        return "researcher";
-    }
-
-    @RequestMapping("/saveWorkingTime")
-    public String saveWorkingTime(HttpServletRequest request, Model model, @RequestParam(name="hours", required=true) List<Double> hours, @RequestParam(name="checkbox", required=false) String checkbox) {
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
-        Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(LocalDate.now(),researcher);
-
-        if(checkbox==null){
-            int counter = 0;
-            for(Project pj : listaProject){
-                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
-                wt.setWorkedHours(hours.get(counter));
-                wt.setLeave(false);
-                wtRepository.save(wt);
-                counter++;
-            }
+    @RequestMapping("/index")
+    public String index(HttpServletRequest request) {
+        if (isUserLoggedIn(request)) {
+            return getIndexByUser(request);
         } else {
-            for(Project pj : listaProject){ //settings all working time as 0 hours
-                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
-                //wtRepository.deleteByResearcherAndDateAndProject(researcher,LocalDate.now(),pj);
-                wtRepository.deleteById(wt.getId());
-                wtRepository.save(new WorkingTime(researcher,pj,LocalDate.now(),0,false,true));
-            }
+            return "redirect:/login";
         }
-        return "redirect:/researcher";
     }
 
-    @RequestMapping("/deleteUser")
-    public String deleteUser(HttpServletRequest request, @RequestParam(name="id") Long id) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
+    @RequestMapping("/loginUser")
+    public String loginUser(@RequestParam(name="user") String user, @RequestParam(name="psw") String psw,
+                         RedirectAttributes redirectAttributes, HttpServletResponse response) {
+        if (userRepository.existsByUsername(user)) {
+            Utente foundUser = userRepository.findByUsername(user);
+            if (foundUser.getPassword().equals(psw)) {
+                Cookie cookie = new Cookie("userLoggedIn", foundUser.getUsername());
+                cookie.setMaxAge(3600); // 1 ora di durata
+                cookie.setHttpOnly(true); // Proteggi il cookie
+                cookie.setPath("/"); // Il cookie è accessibile in tutto il dominio
+                response.addCookie(cookie);
 
-        Researcher researcher = (Researcher)userRepository.findById(id).orElse(null);
-
-        for(WorkingTime wt: wtRepository.findByResearcher(researcher)){
-            wtRepository.deleteById(wt.getId());
-        }
-
-        for(Project pj: projectRepository.findAllByResearchersContains(researcher)){
-            List<Researcher> researchers = pj.getResearchers();
-            researchers.remove(researcher);
-            pj.setResearchers(researchers);
-            projectRepository.save(pj);
-        }
-
-        userRepository.deleteById(id);
-        return "redirect:/administrator";
-    }
-
-    @RequestMapping("/saveProjectResearcher")
-    public String saveProjectResearcher(HttpServletRequest request, Model model, @RequestParam(name="idResearchers", required=true) List<Long> ids, @RequestParam(name="projectId", required=true) Long projectId) {
-        Project project = projectRepository.findById(projectId).orElse(null);
-
-        List<Long> currentResearchersProjectIds = project.getResearchers().stream().map(Researcher::getId).toList();
-        List<Researcher> newResearchers = new ArrayList<>();
-
-        for(Long id : ids){
-            Researcher current = (Researcher) userRepository.findById(id).orElse(null);
-            if (currentResearchersProjectIds.contains(id) && !ids.contains(id)) {
-                wtRepository.deleteByProjectAndResearcher(project,current);
+                return "redirect:/index";
             }
-            else{
-                newResearchers.add(current);
-            }
+            redirectAttributes.addFlashAttribute("error", "Wrong password");
         }
-
-        project.setResearchers(newResearchers);
-        projectRepository.save(project);
-
-        return "redirect:/projectmanagement?id="+projectId;
-    }
-
-    @RequestMapping("/downloadtimesheet")
-    public String downloadtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
-        if(!isValidUrl("researcher",request)){
-            return "redirect:/";
+        else {
+            redirectAttributes.addFlashAttribute("error", "User does not exist.");
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        Project project = projectRepository.findById(id);
-        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
-
-        model.addAttribute("project", project);
-        model.addAttribute("validatedMonths",getWorkedMonth(project, researcher));
-        model.addAttribute("username", cookie.getValue());
-        return "downloadtimesheet";
+        return "redirect:/login";
     }
 
     @RequestMapping("/downloadMonthlyTimesheet")
-    public void downloadMonthlyTimesheet(HttpServletRequest request, HttpServletResponse response, Model model, @RequestParam(name = "idProject", required = true) long idProject,
-                                           @RequestParam(name = "date", required = true) String monthYear,
-                                           @RequestParam(name = "researcherUser", required = true) String username) throws IOException {
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+    public void downloadMonthlyTimesheet(HttpServletRequest request, HttpServletResponse response,
+                                         @RequestParam(name = "idProject") long idProject,
+                                         @RequestParam(name = "date") String monthYear,
+                                         @RequestParam(name = "researcherUser") String username){
+        if(!isValidUrl("researcher",request) && !isValidUrl("supervisor",request)){
+            return;
+        }
 
         int month = Integer.parseInt(monthYear.split("/")[0]);
         int year = Integer.parseInt(monthYear.split("/")[1]);
@@ -489,7 +387,7 @@ public class TimeTrackingController {
                     cell = new PdfPCell(new Phrase());
                     cell.setBackgroundColor(Color.GRAY);
                 } else {
-                    hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(currentDate, researcher, project)).orElse(0.0);
+                    hoursWorkedThisDay = Optional.ofNullable(wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project)).orElse(0.0);
                     if (hoursWorkedThisDay == 0.0) {
                         cell = new PdfPCell(new Phrase());
                     } else {
@@ -544,7 +442,7 @@ public class TimeTrackingController {
                         cell = new PdfPCell(new Phrase());
                         cell.setBackgroundColor(Color.GRAY);
                     } else {
-                        hoursWorkedThisDay = Optional.ofNullable(workingTimeRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt)).orElse(0.0);
+                        hoursWorkedThisDay = Optional.ofNullable(wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt)).orElse(0.0);
                         if (hoursWorkedThisDay == 0.0) {
                             cell = new PdfPCell(new Phrase());
                         } else {
@@ -649,191 +547,7 @@ public class TimeTrackingController {
         }
     }
 
-    private boolean isInteger(double value){
-        return value == (int) value;
-    }
-
-    @RequestMapping("/validationtimesheet")
-    public String validationtimesheet(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
-        if(!isValidUrl("supervisor",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn"); //SERVE???
-        Project project = projectRepository.findById(id);
-        Iterable<Researcher> researchers = projectRepository.findResearchersByProjectId(id);
-
-        ArrayList<WorkingTime> wts = new ArrayList<>();
-        for(Researcher researcher : researchers){
-            wts.addAll(getWorkedMonthWt(project,researcher));
-        }
-
-        model.addAttribute("workedMonthYear",wts);
-        model.addAttribute("researchers",researchers);
-        model.addAttribute("username", cookie.getValue());
-        return "validationtimesheet";
-    }
-
-    @RequestMapping("/projectmanagement")
-    public String projectmanagement(HttpServletRequest request, Model model, @RequestParam(name="id", required = true) long id) {
-        if(!isValidUrl("supervisor",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-
-        ArrayList<Researcher> listaRicercatori = new ArrayList<>();
-        for (Utente utente : userRepository.findAll()){
-            if(utente instanceof  Researcher){
-                listaRicercatori.add((Researcher) utente);
-            }
-        }
-
-        ArrayList<Long> listaIdRicercatori = new ArrayList<>();
-        for (Utente utente : projectRepository.findById(id).getResearchers()){
-            listaIdRicercatori.add(utente.getId());
-        }
-
-        model.addAttribute("selectedResearcherIds",listaIdRicercatori);
-        model.addAttribute("allResearcher",listaRicercatori);
-        model.addAttribute("project",projectRepository.findById(id));
-        model.addAttribute("username", cookie.getValue());
-        return "superviseproject";
-    }
-
-    @RequestMapping("/approveTimesheet")
-    public String approveTimesheet(@RequestParam(name="id", required = true) long id) {
-        WorkingTime wt = wtRepository.findById(id);
-        Researcher researcher = wt.getResearcher();
-        Project project = wt.getProject();
-        LocalDate date = wt.getDate();
-
-        for (WorkingTime everyWt: wtRepository.findAllByDateBetweenAndProjectAndResearcher(LocalDate.of(date.getYear(),date.getMonth(),1),LocalDate.of(date.getYear(),date.getMonth(),YearMonth.of(date.getYear(),date.getMonth()).lengthOfMonth()),project,researcher)){
-            everyWt.setValidated(true);
-            wtRepository.save(everyWt);
-        }
-        return "redirect:/validationtimesheet?id="+wt.getProject().getId();
-    }
-
-    @RequestMapping("/administrator")
-    public String administrator(HttpServletRequest request, Model model) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("username", cookie.getValue());
-        return "administrator";
-    }
-
-    @RequestMapping("/manageusers")
-    public String manageuser(HttpServletRequest request, Model model) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
-
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        ArrayList<Utente> users = new ArrayList<>();
-        for(Utente user : userRepository.findAll()){
-            if( user instanceof Researcher || user instanceof Supervisor) {
-                users.add(user);
-            }
-        }
-        model.addAttribute("users",users);
-        model.addAttribute("username", cookie.getValue());
-        return "manageusers";
-    }
-
-    @RequestMapping("/newuser")
-    public String newuser(HttpServletRequest request, Model model) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("username", cookie.getValue());
-        return "newuser";
-    }
-
-    @PostMapping("/createUser")
-    public String createUser(@RequestParam(name="username") String username, @RequestParam(name="password") String password,
-                             @RequestParam(name="name") String name, @RequestParam(name="surname") String surname,
-                             @RequestParam(name="cf") String cf, @RequestParam(name="userType") String userType) {
-
-        if(userType.equals("Supervisor")){
-            userRepository.save(new Supervisor(username,password,name,surname,cf));
-        } else{
-            userRepository.save(new Researcher(username,password,name,surname,cf));
-        }
-        return "redirect:/manageusers";
-    }
-
-    @RequestMapping("/manageprojects")
-    public String manageproject(HttpServletRequest request, Model model) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        model.addAttribute("projects", projectRepository.findAll());
-        model.addAttribute("username", cookie.getValue());
-        return "manageprojects";
-    }
-
-    @RequestMapping("/newproject")
-    public String newproject(HttpServletRequest request, Model model) {
-        if(!isValidUrl("administrator",request)){
-            return "redirect:/";
-        }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        ArrayList<Supervisor> users = new ArrayList<>();
-        for(Utente user : userRepository.findAll()){
-            if(user instanceof Supervisor) {
-                users.add((Supervisor) user);
-            }
-        }
-        model.addAttribute("supervisors", users);
-        model.addAttribute("username", cookie.getValue());
-        return "newproject";
-    }
-
-    @PostMapping("/createProject")
-    public String createProject(@RequestParam(name="title") String title, @RequestParam(name="cup") String cup,
-                                @RequestParam(name="code") String code, @RequestParam(name="denominazioneSoggetto") String denominazioneSoggetto,
-                                @RequestParam(name="cfSoggetto") String cfSoggetto, @RequestParam(name="supervisor") Long supervisor // ID del supervisore scelto
-    ) {
-        Project newProject = new Project(title,cup,code,denominazioneSoggetto,cfSoggetto);
-        newProject.setSupervisor((Supervisor) userRepository.findById(supervisor).orElse(null));
-        projectRepository.save(newProject);
-        return "redirect:/manageprojects";
-    }
-
-    @RequestMapping("/index")
-    public String index(HttpServletRequest request) {
-        if (isUserLoggedIn(request)) {
-            return getIndexByUser(request);
-        } else {
-            return "redirect:/login";
-        }
-    }
-
-    @RequestMapping("/loginUser")
-    public String create(@RequestParam(name="user", required = true) String user, @RequestParam(name="psw", required = true) String psw, RedirectAttributes redirectAttributes, HttpServletResponse response) {
-        if (userRepository.existsByUsername(user)) {
-            Utente foundUser = userRepository.findByUsername(user);
-            if (foundUser.getPassword().equals(psw)) {
-                Cookie cookie = new Cookie("userLoggedIn", foundUser.getUsername());
-                cookie.setMaxAge(3600); // 1 ora di durata
-                cookie.setHttpOnly(true); // Proteggi il cookie
-                cookie.setPath("/"); // Il cookie è accessibile in tutto il dominio
-                response.addCookie(cookie);
-
-                return "redirect:/index";
-            }
-            redirectAttributes.addFlashAttribute("error", "Wrong password");
-        }
-        else {
-            redirectAttributes.addFlashAttribute("error", "User does not exist.");
-        }
-        return "redirect:/login";
-    }
-
-    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
+    private Cookie getCookieByName(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -856,19 +570,7 @@ public class TimeTrackingController {
         return "redirect:/administrator";
     }
 
-    private boolean isValidUrl(String url,HttpServletRequest request){
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    return ("redirect:/"+url).equals(getIndexByUser(request));
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean isUserLoggedIn(HttpServletRequest request) {
+    private boolean isUserLoggedIn(HttpServletRequest request) {
         Cookie cookie = getCookieByName(request,"userLoggedIn");
         if (cookie != null) {
             return userRepository.existsByUsername(cookie.getValue());
@@ -877,7 +579,11 @@ public class TimeTrackingController {
         return false;
     }
 
-    public boolean isHoliday(LocalDate date) {
+    private boolean isInteger(double value){
+        return value == (int) value;
+    }
+
+    private boolean isHoliday(LocalDate date) {
         int year = date.getYear();
 
         // Festività fisse
@@ -933,34 +639,6 @@ public class TimeTrackingController {
         return LocalDate.of(year, month, day);
     }
 
-    public ArrayList<String> getWorkedMonth(Project project, Researcher researcher){
-        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByValidatedTrueAndResearcherAndProject(researcher, project);
-        ArrayList<String> monthYearList = new ArrayList<>();
-        for(WorkingTime wt : wts){
-            String monthYear = wt.getMonthYear();
-            if (!monthYearList.contains(monthYear)){
-                monthYearList.add(monthYear);
-            }
-        }
-        return monthYearList;
-    }
-
-    public ArrayList<WorkingTime> getWorkedMonthWt(Project project, Researcher researcher){
-        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByResearcherAndProject(researcher, project);
-        ArrayList<WorkingTime> listWts = new ArrayList<>();
-
-        ArrayList<String> monthYearList = new ArrayList<>();
-
-        for(WorkingTime wt : wts){
-            String monthYear = wt.getMonthYear();
-            if (!monthYearList.contains(monthYear)){
-                monthYearList.add(monthYear);
-                listWts.add(wt);
-            }
-        }
-        return listWts;
-    }
-
     private static String getNameDay(int anno, int mese, int giorno) {
         LocalDate data = LocalDate.of(anno, mese, giorno);
 
@@ -986,29 +664,16 @@ public class TimeTrackingController {
         }
     }
 
-
-    /*@PostMapping("/createSupervisor")
-    public Supervisor createSupervisor(@RequestBody Supervisor user) {
-        System.out.println(user);
-        return userRepository.save(user);
+    private boolean isValidUrl(String url, HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userLoggedIn".equals(cookie.getName())) {
+                    return ("redirect:/"+url).equals(getIndexByUser(request));
+                }
+            }
+        }
+        return false;
     }
-
-    @PostMapping("/createResearcher")
-    public Researcher createResearcher(@RequestBody Researcher user) {
-        return userRepository.save(user);
-    }
-
-    @PostMapping("/createAdministrator")
-    public Administrator createAdministrator(@RequestBody Administrator user) {
-        return userRepository.save(user);
-    }
-
-    @PostMapping("/createProject")
-    public Project createResearcher(@RequestBody Project progetto) {
-        projectRepository.save(progetto);
-        return progetto;
-    }
-
-    */
 
 }

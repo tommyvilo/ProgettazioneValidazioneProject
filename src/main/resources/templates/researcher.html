@@ -169,7 +169,7 @@
                        th:value="${hour.workedHours}" oninput="updateHours(this)">
                 <output th:text="${hour.getFormattedHours()}">1:00</output>
             </td>
-            <td><a th:href="@{downloadtimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
+            <td id="timesheetColumn"><a th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>
@@ -284,8 +284,10 @@
      */
     function toggleVacationMode() {
         vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
-        const tableContainer = document.getElementById('projectTableContainer');
+
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         const saveButton = document.getElementById('saveButton');
+
         console.log(status + " " + vacationMode + (status===vacationMode))
         if (vacationMode) {
             if(status!=vacationMode){
@@ -296,12 +298,18 @@
             }
             else {
                 saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
-
             }
-            tableContainer.classList.add('disabled');
+            // Disabilita gli slider
+            sliders.forEach(slider => {
+                slider.disabled = true;
+            });
+
 
         } else {
-            tableContainer.classList.remove('disabled');
+            sliders.forEach(slider => {
+                slider.disabled = false; // Riabilita gli slider
+            });
+
             checkTotalHours(); // Controlla se ci sono modifiche e mostra il bottone
         }
     }

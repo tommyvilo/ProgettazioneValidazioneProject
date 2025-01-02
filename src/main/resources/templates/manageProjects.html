@@ -11,6 +11,9 @@
             color: #2c3e50;
             margin: 0;
             padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Contenitore del messaggio di benvenuto */
@@ -18,14 +21,14 @@
             background-color: #f7fbff;
             padding: 20px 40px;
             display: flex;
-            justify-content: center; /* Cambiato per centrare l'h1 */
+            justify-content: center;
             align-items: center;
             border-bottom: 2px solid #34495e;
         }
 
         .welcome-container .back-button {
             position: absolute;
-            left: 40px; /* Posiziona il bottone a sinistra */
+            left: 40px;
             background-color: #3498db;
             color: white;
             padding: 10px 15px;
@@ -40,9 +43,8 @@
             font-size: 24px;
             color: #34495e;
             text-align: center;
-            flex-grow: 1; /* Rimuovere 'auto' */
+            flex-grow: 1;
         }
-
 
         .welcome-container .back-button:hover {
             background-color: #2980b9;
@@ -62,41 +64,10 @@
             background-color: #c0392b;
         }
 
-        /* Sezione delle informazioni sul progetto */
-        .project-info-container {
-            background-color: #ffffff;
-            padding: 20px;
-            margin: 20px auto;
-            width: 30%;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            text-align: left;
-        }
-
-        .project-info-container h2 {
-            font-size: 20px;
-            color: #34495e;
-            margin-bottom: 10px;
-        }
-
-        .project-info-container p {
-            font-size: 16px;
-            color: #7f8c8d;
-            margin: 5px 0;
-        }
-
-        .project-info-container .highlight {
-            color: #2ecc71;
-            font-weight: bold;
-        }
-
-
-        /* Sezione della tabella */
+        /* Stile per la tabella dei progetti */
         .table-container {
             padding: 20px;
+            margin-top: 20px;
             text-align: center;
         }
 
@@ -136,45 +107,58 @@
             text-decoration: underline;
         }
 
+        .create-project-button {
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 16px;
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+        }
+
+        .create-project-button:hover {
+            background-color: #27ae60;
+        }
+
     </style>
 </head>
 
 <body>
 <div class="welcome-container">
-    <a href="/researcher" class="back-button">Go back</a>
-    <h1>Welcome RESEARCHER <span id="username" th:text="${username}">username</span></h1>
+    <a href="/administrator" class="back-button">Go back</a>
+    <h1>Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
     <a href="/logout" class="logout-button">Logout</a>
 </div>
 
-<!-- Contenitore delle informazioni sul progetto -->
-<div class="project-info-container">
-    <div>
-        <h2>Project name:</h2>
-        <p><span class="highlight" th:text="${project.title}">Project name</span></p>
-    </div>
-    <div>
-        <h2>Funding Agency:</h2>
-        <p><span class="highlight" th:text="${project.denominazioneSoggetto}">Funding Agency</span></p>
-    </div>
-</div>
-
 <div class="table-container">
-    <h1>DOWNLOAD VALIDATED MONTHS TIMESHEET</h1>
+    <!-- Bottone per creare nuovo progetto -->
+    <a href="/newProject" class="create-project-button">Crea Progetto</a>
+
     <table>
         <thead>
         <tr>
-            <th>MONTH</th>
-            <th></th>
+            <th>Title</th>
+            <th>CUP</th>
+            <th>Funding Agency</th>
+            <th>Manage</th>
         </tr>
         </thead>
-
         <tbody>
-        <tr th:each="month: ${validatedMonths}">
-            <td th:text="${month}">10</td>
-            <td><a th:href="@{/downloadMonthlyTimesheet=${project.getId()}, date=${month}, researcherUser=${username})}">Download Timesheet</a></td>
+        <tr th:each="project : ${projects}">
+            <td th:text="${project.title}"></td>
+            <td th:text="${project.cup}"></td>
+            <td th:text="${project.getDenominazioneSoggetto()}"></td>
+            <td><a href="#">Manage</a></td>
         </tr>
         </tbody>
     </table>
 </div>
+
 </body>
 </html>
