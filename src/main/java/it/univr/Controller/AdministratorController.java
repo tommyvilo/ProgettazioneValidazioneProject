@@ -5,9 +5,9 @@ import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Supervisor;
 import it.univr.Model.User.Utente;
 import it.univr.Model.WorkingTime;
-import it.univr.ProjectRepository;
-import it.univr.UserRepository;
-import it.univr.WorkingTimeRepository;
+import it.univr.Repository.ProjectRepository;
+import it.univr.Repository.UserRepository;
+import it.univr.Repository.WorkingTimeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,6 @@ public class AdministratorController {
         if(!isValidUrl(request)){
             return "redirect:/";
         }
-        System.out.println("ciao");
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         ArrayList<Utente> users = new ArrayList<>();
         for(Utente user : userRepository.findAll()){

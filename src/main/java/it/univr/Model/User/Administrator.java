@@ -9,4 +9,9 @@ public class Administrator extends Utente {
     public Administrator(String username, String password, String name, String surname, String cf){
         super(username, password, name, surname, cf);
     }
+
+    @Override
+    public String toString(){
+        return "Administrator [id=" + getId() + ", username=" + getUsername() + ", name=" + getName() + ", surname=" + getSurname() + ", cf=" + getCf() + "]";
+    }
 }

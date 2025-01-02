@@ -142,7 +142,7 @@
 <body>
 <div class="welcome-container">
     <h1>Welcome RESEARCHER <span id="username" th:text="${username}">username</span></h1>
-    <a href="/logout" class="logout-button">Logout</a>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
 <form action="saveWorkingTime">
@@ -161,15 +161,15 @@
 
         <tbody>
         <tr th:each="hour: ${hours}">
-            <td th:text="${hour.getProject().title}">Project Title</td>
+            <td id="projectTitle" th:text="${hour.getProject().title}">Project Title</td>
             <td th:text="${hour.getProject().cup}">CUP</td>
             <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
             <td>
-                <input type="range" name="hours" min="0" max="8" step="0.25"
+                <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
                        th:value="${hour.workedHours}" oninput="updateHours(this)">
                 <output th:text="${hour.getFormattedHours()}">1:00</output>
             </td>
-            <td id="timesheetColumn"><a th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
+            <td id="timesheetColumn"><a id="downloadTimesheet" th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>

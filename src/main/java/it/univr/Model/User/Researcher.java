@@ -11,4 +11,9 @@ public class Researcher extends Utente {
         super(username, password, name, surname, cf);
     }
 
+    @Override
+    public String toString(){
+        return "Researcher [id=" + getId() + ", username=" + getUsername() + ", name=" + getName() + ", surname=" + getSurname() + ", cf=" + getCf() + "]";
+    }
+
 }

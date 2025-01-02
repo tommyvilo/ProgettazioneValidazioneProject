@@ -69,13 +69,4 @@ public abstract class Utente {
     public void setCf(String cf) {
         this.cf = cf;
     }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString(){
-        return "Utente [id=" + id + ", username=" + username + ", name=" + name + ", surname=" + surname + ", cf=" + cf + "]";
-    }
 }

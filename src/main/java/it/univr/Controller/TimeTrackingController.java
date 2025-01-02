@@ -1,7 +1,9 @@
 package it.univr.Controller;
-import it.univr.*;
 import it.univr.Model.Project;
 import it.univr.Model.WorkingTime;
+import it.univr.Repository.ProjectRepository;
+import it.univr.Repository.UserRepository;
+import it.univr.Repository.WorkingTimeRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -144,11 +146,11 @@ public class TimeTrackingController {
         projectRepository.save(p4);
         projectRepository.save(p5);
 
-        WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.now(),2,false,false);
+        WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.of(2025,1,1),2,false,false);
         WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,false,false);
         WorkingTime w7 = new WorkingTime(r15,p1, LocalDate.of(2024,12,10),2,false,false);
-        WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.now(),2.5,false,false);
-        WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.now(),3,false,false);
+        WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.of(2025,1,1),2.5,false,false);
+        WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.of(2025,1,1),3,false,false);
         WorkingTime w5 = new WorkingTime(r15,p4, LocalDate.of(2024,12,10),4,false,false);
         WorkingTime w4 = new WorkingTime(r15,p4, LocalDate.of(2024,11,19),8,true,false);
 

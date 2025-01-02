@@ -1,4 +1,4 @@
-package it.univr;
+package it.univr.Repository;
 import it.univr.Model.User.Utente;
 import org.springframework.data.repository.CrudRepository;
 

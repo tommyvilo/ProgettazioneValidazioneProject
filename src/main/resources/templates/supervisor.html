@@ -128,11 +128,11 @@
 
         <tbody>
         <tr th:each="project: ${projects}">
-            <td th:text="${project.title}">10</td>
+            <td id="titleProject" th:text="${project.title}">10</td>
             <td th:text="${project.cup}">John</td>
             <td th:text="${project.denominazioneSoggetto}">Smith</td>
-            <td><a th:href="@{projectManagement(id=${project.id})}">manage researcher</a></td>
-            <td><a th:href="@{validationTimesheet(id=${project.id})}">validate working hours</a></td>
+            <td><a id="manageResearcher" th:href="@{projectManagement(id=${project.id})}">manage researcher</a></td>
+            <td><a id="validationTimesheet" th:href="@{validationTimesheet(id=${project.id})}">validate working hours</a></td>
         </tr>
         </tbody>
     </table>

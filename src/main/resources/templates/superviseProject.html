@@ -170,12 +170,12 @@
 <div class="welcome-container">
     <a href="/supervisor" class="back-button">Go back</a>
     <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
-    <a href="/logout" class="logout-button">Logout</a>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
 <form action="saveProjectResearcher">
     <div class="project-info">
-        <input type="hidden" name="projectId" th:value="${project.getId()}">
+        <input id="projectId" type="hidden" name="projectId" th:value="${project.getId()}">
         <h2 th:text="${project.getTitle()}">Project Title</h2>
         <p><strong>Project CUP:</strong> <span th:text="${project.getCup()}">Project description goes here.</span></p>
         <p><strong>Funding Agency:</strong> <span th:text="${project.getDenominazioneSoggetto()}">Start date here</span></p>
@@ -199,7 +199,7 @@
             </thead>
             <tbody>
             <tr th:each="researcher : ${allResearcher}" th:attr="data-surname=${researcher.getSurname()}">
-                <td><input type="checkbox" th:value="${researcher.id}" onchange="reorderRows(); checkChanges();" name="idResearchers" /></td>
+                <td><input id="checkBox" type="checkbox" th:value="${researcher.id}" onchange="reorderRows(); checkChanges();" name="idResearchers" /></td>
                 <td th:text="${researcher.getName()}"></td>
                 <td th:text="${researcher.getSurname()}"></td>
                 <td th:text="${researcher.getUsername()}"></td>

@@ -10,7 +10,7 @@ import java.util.*;
 public class Project {
 
     @Id @GeneratedValue(strategy=GenerationType.AUTO) private Long id;
-    private String title;
+    @Column(unique = true) private String title;
     private String cup;
     private String code;
     private String denominazioneSoggetto;

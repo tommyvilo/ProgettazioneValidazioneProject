@@ -133,12 +133,12 @@
 <div class="welcome-container">
     <a href="/administrator" class="back-button">Go back</a>
     <h1>Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
-    <a href="/logout" class="logout-button">Logout</a>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
 <div class="table-container">
     <!-- Bottone per creare nuovo progetto -->
-    <a href="/newProject" class="create-project-button">Crea Progetto</a>
+    <a id="newProject" href="/newProject" class="create-project-button">Crea Progetto</a>
 
     <table>
         <thead>
@@ -150,7 +150,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="project : ${projects}">
+        <tr id="project" th:each="project : ${projects}">
             <td th:text="${project.title}"></td>
             <td th:text="${project.cup}"></td>
             <td th:text="${project.getDenominazioneSoggetto()}"></td>

@@ -81,7 +81,7 @@ public class WorkingTime {
         this.validated = validated;
     }
 
-    public boolean isValidated(){
+    public boolean getValidated(){
         return validated;
     }
 
@@ -90,7 +90,7 @@ public class WorkingTime {
         return date.format(formatter);
     }
 
-    public long getId(){
+    public Long getId(){
         return id;
     }
 
@@ -101,6 +101,4 @@ public class WorkingTime {
         // Format minutes with leading zero if necessary
         return String.format("%d:%02d", hours, minutes);
     }
-
-
 }

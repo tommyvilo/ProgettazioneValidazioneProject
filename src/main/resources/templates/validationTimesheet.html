@@ -123,7 +123,7 @@
 <div class="welcome-container">
     <a href="/supervisor" class="back-button">Go back</a>
     <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
-    <a href="/logout" class="logout-button">Logout</a>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
 <!-- Filtro per il Researcher -->
@@ -151,12 +151,12 @@
         </thead>
 
         <tbody id="timesheetRows">
-        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.isValidated()}" th:data-researcher="${timesheet.getResearcher().username}">
+        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.getValidated()}" th:data-researcher="${timesheet.getResearcher().username}">
             <td th:text="${timesheet.getResearcher().username}">10</td>
             <td th:text="${timesheet.getMonthYear()}">John</td>
             <td th:text="${timesheet.getProject().title}">Smith</td>
-            <td th:text="${timesheet.isValidated()}">True</td>
-            <td><a th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.isValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
+            <td id="status" th:text="${timesheet.getValidated()}">True</td>
+            <td><a id="validateLink" th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.getValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
             <td><a th:href="@{/downloadMonthlyTimesheet(idProject=${timesheet.getProject().getId()}, date=${timesheet.getMonthYear()}, researcherUser=${timesheet.getResearcher().getUsername()})}">Download Timesheet</a></td>
         </tr>
         </tbody>
