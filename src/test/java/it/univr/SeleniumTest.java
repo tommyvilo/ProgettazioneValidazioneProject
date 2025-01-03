@@ -40,10 +40,10 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        researcherPage.signHours();
+        researcherPage.signHours(1);
 
         LocalDate date = LocalDate.now();
-        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle());
+        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(1));
         Researcher r = (Researcher) userRepository.findByUsername("mot");
 
         WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(p,r,date);
@@ -59,7 +59,7 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet();
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(2);
         downloadTimesheetPage.downloadTimesheet();
         //researcherPage.logout();
     }
@@ -86,7 +86,7 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
-        SuperviseProjectPage superviseProjectPage = supervisorPage.manageResearcher();
+        SuperviseProjectPage superviseProjectPage = supervisorPage.manageResearcher(0);
         List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
 
         assertEquals(6,superviseProjectPage.getResearcherSelected());
@@ -211,6 +211,46 @@ public class SeleniumTest extends BaseTest {
         loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("jack","123",userRepository);
         assertEquals("Welcome RESEARCHER jack",researcherPage.getWelcomeString());
+        researcherPage.logout();
+    }
+
+    @Test
+    public void testCreateAndVerifyProject(){
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
+        ManageProjectPage manageProjectPage = administratorPage.manageProjects();
+
+        assertEquals(6,manageProjectPage.projectsNumber());
+
+        NewProjectPage newProjectPage = manageProjectPage.newProject();
+        manageProjectPage = newProjectPage.createProject("TestProject","1F","2025P","Univr","UNI","Mattia Vino");
+
+        assertEquals(7,manageProjectPage.projectsNumber());
+        loginPage = manageProjectPage.logout();
+
+        SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("mattia","mattevino",userRepository);
+        SuperviseProjectPage superviseProjectPage = supervisorPage.manageResearcher(1);
+
+        List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
+
+        assertEquals(0,superviseProjectPage.getResearcherSelected());
+        superviseProjectPage.addResearcher(0); //Sappiamo essere Nicolò Zerman
+        List<Researcher> listResearcherUpdated = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
+
+        assertNotEquals(listResearcher,listResearcherUpdated);
+        assertEquals(1,superviseProjectPage.getResearcherSelected());
+
+        loginPage = superviseProjectPage.logout();
+        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("nicozerman","nicksss",userRepository);
+        researcherPage.signHours(3);
+
+        LocalDate date = LocalDate.now();
+        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(3));
+        Researcher r = (Researcher) userRepository.findByUsername("nicozerman");
+
+        WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(p,r,date);
+        assertEquals(8,wt.getWorkedHours(),0);
         researcherPage.logout();
     }
 }

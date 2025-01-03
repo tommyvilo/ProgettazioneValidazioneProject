@@ -17,7 +17,7 @@ public abstract class BaseTest {
     protected WebDriver driver;
     @Before
     public void setUp() {
-        WebDriverManager manager = WebDriverManager.firefoxdriver();
+        WebDriverManager manager = WebDriverManager.edgedriver();
         if (driver == null)
             driver = manager.create();
     }

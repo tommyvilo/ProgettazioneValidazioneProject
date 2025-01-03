@@ -44,7 +44,7 @@ public class TimeTrackingController {
 
     @PostConstruct
     public void init() {
-        Researcher r1 = new Researcher("nicozerman","zermaculo","Nicolò","Zerman","ZRMNCL02S19L781E");
+        Researcher r1 = new Researcher("nicozerman","nicksss","Nicolò","Zerman","ZRMNCL02S19L781E");
         Researcher r2 = new Researcher("lucasrin", "lucarino", "Luca", "Rinaldi", "RNLCLS01D13L781X");
         Researcher r3 = new Researcher("alessandrab1", "alessandrabb", "Alessandra", "Bianchi", "BNCHLD01E44F861Z");
         Researcher r4 = new Researcher("giovanniferrari", "gioferr", "Giovanni", "Ferrari", "FRRGNN03C19A481S");

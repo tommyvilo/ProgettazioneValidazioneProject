@@ -13,11 +13,11 @@ import java.util.List;
 
 public class ResearcherPage extends PageObject {
 
-    @FindBy(xpath="//input[@id='hours'][1]")
-    private WebElement firstSlider;
+    @FindBy(xpath="//input[@id='hours']")
+    private List<WebElement> sliderList;
 
-    @FindBy(xpath="//td[@id='projectTitle'][1]")
-    private WebElement nameFirstSlider;
+    @FindBy(xpath="//td[@id='projectTitle']")
+    private List<WebElement> titleList;
 
     @FindBy(xpath="//a[@id='downloadTimesheet']")
     private List<WebElement> download;
@@ -40,19 +40,14 @@ public class ResearcherPage extends PageObject {
         super(driver);
     }
 
-    public void signHours(){
+    public void signHours(int index){
         Actions actions = new Actions(driver);
-        actions.dragAndDropBy(firstSlider, 100, 0).perform();
+        actions.dragAndDropBy(sliderList.get(index), 100, 0).perform();
         saveButton.click();
     }
 
-    public String getProjectTitle(){
-        return nameFirstSlider.getText();
-    }
-
-    public DownloadTimesheetPage downloadTimesheet(){
-        download.get(2).click();
-        return new DownloadTimesheetPage(driver);
+    public String getProjectTitle(int index){
+        return titleList.get(index).getText();
     }
 
     public DownloadTimesheetPage downloadTimesheet(int index){
@@ -66,7 +61,7 @@ public class ResearcherPage extends PageObject {
     }
 
     public boolean sliderStatus(){
-        return firstSlider.isEnabled();
+        return sliderList.get(0).isEnabled();
     }
 
     public String getWelcomeString(){

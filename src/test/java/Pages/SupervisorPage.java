@@ -21,8 +21,8 @@ public class SupervisorPage extends PageObject {
         super(driver);
     }
 
-    public SuperviseProjectPage manageResearcher(){
-        manageResearchers.get(0).click();
+    public SuperviseProjectPage manageResearcher(int index){
+        manageResearchers.get(index).click();
         return new SuperviseProjectPage(driver);
     }
 
