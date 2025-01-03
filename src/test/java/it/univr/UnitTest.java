@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class UnitTest {
 
     @Test
-    public void testUserResearcherUnits(){
+    public void testResearcherUnits(){
         Researcher r = new Researcher("nicozerman","123toor","Nicolò","Zerman","ZRMNCL02S19L781E");
 
         assertNull(r.getId());

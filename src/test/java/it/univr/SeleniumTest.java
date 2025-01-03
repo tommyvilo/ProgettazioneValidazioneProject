@@ -154,7 +154,7 @@ public class SeleniumTest extends BaseTest {
         L'amministratore accede ed elimina un utente
      */
     @Test
-    public void deleteUser(){
+    public void testDeleteUser(){
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
