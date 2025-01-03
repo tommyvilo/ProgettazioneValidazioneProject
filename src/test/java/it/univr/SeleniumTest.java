@@ -203,9 +203,8 @@ public class SeleniumTest extends BaseTest {
         manageUsersPage = newUserPage.createUser("jack","123","Nuovo","Utente","UUU","Researcher");
 
         assertEquals(22,manageUsersPage.usersNumber());
-        manageUsersPage.logout();
+        loginPage = manageUsersPage.logout();
 
-        loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("jack","123",userRepository);
         assertEquals("Welcome RESEARCHER jack",researcherPage.getWelcomeString());
         researcherPage.logout();

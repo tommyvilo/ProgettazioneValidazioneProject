@@ -36,7 +36,6 @@ public class ValidationTimesheetPage extends PageObject {
             }
             index++;
         }
-        System.out.println(index);
         validateLink.get(index).click();
     }
 
@@ -48,7 +47,6 @@ public class ValidationTimesheetPage extends PageObject {
             }
             index++;
         }
-        System.out.println(index);
         return status.get(index).getText();
     }
 
