@@ -7,15 +7,12 @@ import it.univr.Model.WorkingTime;
 import it.univr.Repository.ProjectRepository;
 import it.univr.Repository.UserRepository;
 import it.univr.Repository.WorkingTimeRepository;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -243,10 +240,10 @@ public class SeleniumTest extends BaseTest {
 
         loginPage = superviseProjectPage.logout();
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("nicozerman","nicksss",userRepository);
-        researcherPage.signHours(3);
+        researcherPage.signHours(2);
 
         LocalDate date = LocalDate.now();
-        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(3));
+        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(2));
         Researcher r = (Researcher) userRepository.findByUsername("nicozerman");
 
         WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(p,r,date);
