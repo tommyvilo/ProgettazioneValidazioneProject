@@ -14,6 +14,9 @@ public class ValidationTimesheetPage extends PageObject {
     @FindBy(xpath="//td[@id='status']")
     private List<WebElement> status;
 
+    @FindBy(xpath="//td[@id='monthYear']")
+    private List<WebElement> monthYears;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -23,6 +26,30 @@ public class ValidationTimesheetPage extends PageObject {
 
     public void validateTimesheet(int index){
         validateLink.get(index).click();
+    }
+
+    public void validateTimesheet(String monthYear){
+        int index = 0;
+        for(WebElement data : this.monthYears){
+            if(data.getText().equals(monthYear)){
+                break;
+            }
+            index++;
+        }
+        System.out.println(index);
+        validateLink.get(index).click();
+    }
+
+    public String getStatusTimesheet(String monthYear){
+        int index = 0;
+        for(WebElement data : this.monthYears){
+            if(data.getText().equals(monthYear)){
+                break;
+            }
+            index++;
+        }
+        System.out.println(index);
+        return status.get(index).getText();
     }
 
     public String getStatusTimesheet(int index){

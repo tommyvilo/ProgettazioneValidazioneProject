@@ -37,7 +37,7 @@
 
         <tbody>
         <tr th:each="month: ${validatedMonths}">
-            <td th:text="${month}">10</td>
+            <td id="monthYear" th:text="${month}">10</td>
             <td><a id="timesheet" th:href="@{/downloadMonthlyTimesheet(idProject=${project.getId()}, date=${month}, researcherUser=${username})}">Download Timesheet</a></td>
         </tr>
         </tbody>

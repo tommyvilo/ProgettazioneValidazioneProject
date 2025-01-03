@@ -13,6 +13,9 @@ public class DownloadTimesheetPage extends PageObject {
     @FindBy(xpath="//a[@id='timesheet']")
     private List<WebElement> download;
 
+    @FindBy(xpath="//td[@id='monthYear']")
+    private List<WebElement> monthYears;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -22,6 +25,18 @@ public class DownloadTimesheetPage extends PageObject {
 
     public void downloadTimesheet(){
         download.get(0).click();
+    }
+
+    public boolean downloadTimesheet(String monthYear){
+        int index = 0;
+        for(WebElement date : this.monthYears){
+            if(date.getText().equals(monthYear)){
+                download.get(index).click();
+                return true;
+            }
+            index++;
+        }
+        return false;
     }
 
     public LoginPage logout(){

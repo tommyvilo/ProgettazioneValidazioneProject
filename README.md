@@ -95,7 +95,7 @@ Dopo aver effettuato l'accesso, l'amministratore entra nella pagine di Gestione 
 **_testValidationAndDownload_**<br>
 Il ricercatore verifica di non avere nessun timesheet scaricabile. Successivamente il supervisore approva il timesheet del ricercatore e infine quest'ultima riuscirà a scaricarlo.
 
-**_testCreateResearcher_**<br>
+**_testCreateResearcherAndLogin_**<br>
 L'amministratore crea un utente Ricercatore e successivamente il nuovo ricercatore effettua il login.
 
 **_testCreateAndVerifyProject_**<br>

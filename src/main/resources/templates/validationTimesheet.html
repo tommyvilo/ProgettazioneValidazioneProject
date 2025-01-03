@@ -40,7 +40,7 @@
         <tbody id="timesheetRows">
         <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.getValidated()}" th:data-researcher="${timesheet.getResearcher().username}">
             <td th:text="${timesheet.getResearcher().username}">10</td>
-            <td th:text="${timesheet.getMonthYear()}">John</td>
+            <td id="monthYear" th:text="${timesheet.getMonthYear()}">John</td>
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td id="status" th:text="${timesheet.getValidated()}">True</td>
             <td><a id="validateLink" th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.getValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>

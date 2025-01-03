@@ -28,6 +28,9 @@ public class ResearcherPage extends PageObject {
     @FindBy(xpath="//input[@id='vacationCheckbox']")
     private WebElement vacationCheckbox;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -52,6 +55,11 @@ public class ResearcherPage extends PageObject {
         return new DownloadTimesheetPage(driver);
     }
 
+    public DownloadTimesheetPage downloadTimesheet(int index){
+        download.get(index).click();
+        return new DownloadTimesheetPage(driver);
+    }
+
     public void signVacation(){
         vacationCheckbox.click();
         saveButton.click();
@@ -59,6 +67,10 @@ public class ResearcherPage extends PageObject {
 
     public boolean sliderStatus(){
         return firstSlider.isEnabled();
+    }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
     }
 
     public LoginPage logout(){

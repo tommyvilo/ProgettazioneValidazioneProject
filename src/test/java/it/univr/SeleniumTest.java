@@ -7,7 +7,10 @@ import it.univr.Model.WorkingTime;
 import it.univr.Repository.ProjectRepository;
 import it.univr.Repository.UserRepository;
 import it.univr.Repository.WorkingTimeRepository;
+import net.bytebuddy.implementation.bind.annotation.Super;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SeleniumTest extends BaseTest {
 
     @Autowired
@@ -113,7 +117,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        L'amministratore e aggiunge un utente
+        L'amministratore accede e aggiunge un utente
      */
     @Test
     public void scenario6(){
@@ -132,7 +136,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        L'amministratore e aggiunge un progetto
+        L'amministratore accede e aggiunge un progetto
      */
     @Test
     public void scenario7(){
@@ -160,10 +164,53 @@ public class SeleniumTest extends BaseTest {
         AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
         ManageUsersPage manageUsersPage = administratorPage.manageUsers();
 
-        assertEquals(21,manageUsersPage.usersNumber());
+        assertEquals(22,manageUsersPage.usersNumber());
         manageUsersPage.deleteUser(3);
-        assertEquals(20,manageUsersPage.usersNumber());
+        assertEquals(21,manageUsersPage.usersNumber());
 
         manageUsersPage.logout();
+    }
+
+    @Test
+    public void testValidationAndDownload(){
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(1);
+        assertFalse(downloadTimesheetPage.downloadTimesheet("12/2024"));
+        researcherPage.logout();
+
+        SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
+        ValidationTimesheetPage validationTimesheetPage =  supervisorPage.manageValidation();
+        assertEquals("false",validationTimesheetPage.getStatusTimesheet("12/2024"));
+        validationTimesheetPage.validateTimesheet("12/2024");
+        assertEquals("true",validationTimesheetPage.getStatusTimesheet("12/2024"));
+        validationTimesheetPage.logout();
+
+        researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        downloadTimesheetPage = researcherPage.downloadTimesheet(0);
+        assertTrue(downloadTimesheetPage.downloadTimesheet("12/2024"));
+        researcherPage.logout();
+    }
+
+    @Test
+    public void testCreateResearcherAndLogin(){
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
+        ManageUsersPage manageUsersPage = administratorPage.manageUsers();
+
+        assertEquals(21,manageUsersPage.usersNumber());
+
+        NewUserPage newUserPage = manageUsersPage.newUser();
+        manageUsersPage = newUserPage.createUser("jack","123","Nuovo","Utente","UUU","Researcher");
+
+        assertEquals(22,manageUsersPage.usersNumber());
+        manageUsersPage.logout();
+
+        loginPage = new LoginPage(driver);
+        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("jack","123",userRepository);
+        assertEquals("Welcome RESEARCHER jack",researcherPage.getWelcomeString());
+        researcherPage.logout();
     }
 }
