@@ -240,7 +240,14 @@ public class TimeTrackingController {
                                          @RequestParam(name = "idProject") long idProject,
                                          @RequestParam(name = "date") String monthYear,
                                          @RequestParam(name = "researcherUser") String username){
-        if(!isValidUrl("researcher",request) && !isValidUrl("supervisor",request)){
+        boolean isSupervisor;
+        if(isValidUrl("researcher",request)){
+            isSupervisor = false;
+        }
+        else if(isValidUrl("supervisor",request)){
+            isSupervisor = true;
+        }
+        else {
             return;
         }
 
@@ -389,7 +396,10 @@ public class TimeTrackingController {
                     cell = new PdfPCell(new Phrase());
                     cell.setBackgroundColor(Color.GRAY);
                 } else {
-                    hoursWorkedThisDay = Optional.ofNullable(wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project)).orElse(0.0);
+                    WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project);
+                    if (wt!=null){
+                        hoursWorkedThisDay = wt.getWorkedHours();
+                    }
                     if (hoursWorkedThisDay == 0.0) {
                         cell = new PdfPCell(new Phrase());
                     } else {
@@ -432,26 +442,48 @@ public class TimeTrackingController {
 
             List<Project> otherProjects = projectRepository.findAllByResearchersContains(researcher);
             otherProjects.remove(project);
-            for (Project pjt : otherProjects){
+            for (Project pjt : otherProjects) {
                 cell = new PdfPCell(new Phrase(pjt.getTitle(), projectFont));
                 cell.setBackgroundColor(Color.LIGHT_GRAY);
                 otherProjectTable.addCell(cell);
                 counterWorkedHoursP = 0;
                 for (int i = 1; i <= totalDays; i++) {
-                    LocalDate currentDate = LocalDate.of(year,month,i);
+                    LocalDate currentDate = LocalDate.of(year, month, i);
                     double hoursWorkedThisDay = 0.0;
-                    if(isHoliday(currentDate)) {
+                    boolean validated = false;
+                    if (isHoliday(currentDate)) {
                         cell = new PdfPCell(new Phrase());
                         cell.setBackgroundColor(Color.GRAY);
                     } else {
-                        hoursWorkedThisDay = Optional.ofNullable(wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt)).orElse(0.0);
-                        if (hoursWorkedThisDay == 0.0) {
-                            cell = new PdfPCell(new Phrase());
-                        } else {
-                            if(isInteger(hoursWorkedThisDay)) {
-                                cell = new PdfPCell(new Phrase(String.valueOf((int) hoursWorkedThisDay), normalFont));
+                        WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt);
+                        if (wt!=null){
+                            hoursWorkedThisDay = wt.getWorkedHours();
+                            validated = wt.getValidated();
+                        }
+                        if(isSupervisor){
+                            if (hoursWorkedThisDay == 0.0) {
+                                cell = new PdfPCell(new Phrase());
                             } else {
-                                cell = new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont));
+                                if (isInteger(hoursWorkedThisDay)) {
+                                    cell = new PdfPCell(new Phrase(String.valueOf((int) hoursWorkedThisDay), normalFont));
+                                } else {
+                                    cell = new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont));
+                                }
+                                if(validated){
+                                    cell.setBackgroundColor(Color.green);
+                                } else {
+                                    cell.setBackgroundColor(Color.RED);
+                                }
+                            }
+                        } else {
+                            if (hoursWorkedThisDay == 0.0 || !validated) {
+                                cell = new PdfPCell(new Phrase());
+                            } else {
+                                if (isInteger(hoursWorkedThisDay)) {
+                                    cell = new PdfPCell(new Phrase(String.valueOf((int) hoursWorkedThisDay), normalFont));
+                                } else {
+                                    cell = new PdfPCell(new Phrase(String.valueOf(hoursWorkedThisDay), normalFont));
+                                }
                             }
                         }
                         cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
@@ -459,9 +491,9 @@ public class TimeTrackingController {
                     }
                     otherProjectTable.addCell(cell);
                     counterWorkedHoursP += hoursWorkedThisDay;
-                    totalHoursPerDay.put(i, totalHoursPerDay.get(i)+hoursWorkedThisDay);
+                    totalHoursPerDay.put(i, totalHoursPerDay.get(i) + hoursWorkedThisDay);
                 }
-                if(isInteger(counterWorkedHoursP)) {
+                if (isInteger(counterWorkedHoursP)) {
                     cell = new PdfPCell(new Phrase(String.valueOf((int) counterWorkedHoursP), totaleFont));
                 } else {
                     cell = new PdfPCell(new Phrase(String.valueOf(counterWorkedHoursP), totaleFont));
@@ -470,6 +502,40 @@ public class TimeTrackingController {
                 cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 otherProjectTable.addCell(cell);
             }
+
+            // Riga "Malattia"
+            System.out.println("ciao");
+            int leaveDays = 0;
+            cell = new PdfPCell(new Phrase("Malattia ...", projectFont));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            otherProjectTable.addCell(cell);
+            for (int i = 1; i <= totalDays; i++) {
+                LocalDate currentDate = LocalDate.of(year,month,i);
+                boolean isLeave = false;
+                if(isHoliday(currentDate)) {
+                    cell = new PdfPCell(new Phrase());
+                    cell.setBackgroundColor(Color.GRAY);
+                } else {
+                    WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project);
+                    if (wt!=null){
+                        isLeave = wt.getLeave();
+                    }
+                    if (isLeave) {
+                        leaveDays++;
+                    }
+                    System.out.println("ciao");
+                    cell = new PdfPCell(new Phrase());
+                    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                }
+                otherProjectTable.addCell(cell);
+            }
+            int leaveHours = 0*leaveDays;
+            cell = new PdfPCell(new Phrase(String.valueOf(leaveHours), totaleFont));
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            otherProjectTable.addCell(cell);
+            System.out.println("ciao");
 
             PdfPTable endProjectTable = new PdfPTable(columnWidths);
             endProjectTable.setWidthPercentage(100);

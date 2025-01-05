@@ -84,9 +84,15 @@
         const tableContainer = document.getElementById('projectTableContainer');
         const saveButton = document.getElementById('saveButton');
         const vacationCheckbox = document.getElementById('vacationCheckbox');
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+
+        // Disabilita gli slider
+        sliders.forEach(slider => {
+            slider.disabled = true;
+        });
 
         // Disabilita la tabella
-        tableContainer.classList.add('disabled');
+        // tableContainer.classList.add('disabled');
 
         // Disabilita il checkbox
         vacationCheckbox.disabled = true;
