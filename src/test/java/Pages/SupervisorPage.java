@@ -14,9 +14,6 @@ public class SupervisorPage extends PageObject {
     @FindBy(xpath="//a[@id='validationTimesheet']")
     private List<WebElement> validationTimesheets;
 
-    @FindBy(xpath="//a[@id='logout']")
-    private WebElement logoutButton;
-
     public SupervisorPage(WebDriver driver) {
         super(driver);
     }
@@ -30,10 +27,4 @@ public class SupervisorPage extends PageObject {
         validationTimesheets.get(0).click();
         return new ValidationTimesheetPage(driver);
     }
-
-    public LoginPage logout(){
-        logoutButton.click();
-        return new LoginPage(driver);
-    }
-
 }

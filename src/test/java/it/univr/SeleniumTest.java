@@ -58,7 +58,7 @@ public class SeleniumTest extends BaseTest {
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
         DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(2);
         downloadTimesheetPage.downloadTimesheet();
-        //researcherPage.logout();
+        downloadTimesheetPage.logout();
     }
 
     /*

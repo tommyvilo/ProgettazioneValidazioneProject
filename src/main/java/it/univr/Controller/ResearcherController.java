@@ -2,7 +2,6 @@ package it.univr.Controller;
 
 import it.univr.Model.Project;
 import it.univr.Model.User.Researcher;
-import it.univr.Model.User.Supervisor;
 import it.univr.Model.WorkingTime;
 import it.univr.Repository.ProjectRepository;
 import it.univr.Repository.UserRepository;
@@ -15,9 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +26,17 @@ public class ResearcherController {
     private ProjectRepository projectRepository;
     @Autowired
     private WorkingTimeRepository wtRepository;
+    @Autowired
+    private TimeTrackingController ttController;
 
     @RequestMapping("/researcher")
     public String researcher(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("researcher",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
+
+        assert cookie != null;
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
         LocalDate date = LocalDate.now();
 
@@ -52,7 +53,7 @@ public class ResearcherController {
         }else{
             model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
         }
-        model.addAttribute("isHoliday",isHoliday(date));
+        model.addAttribute("isHoliday",ttController.isHoliday(date));
         return "researcher";
     }
 
@@ -60,10 +61,12 @@ public class ResearcherController {
     public String saveWorkingTime(HttpServletRequest request,
                                   @RequestParam(name="hours", required=false) List<Double> hours,
                                   @RequestParam(name="checkbox", required=false) String checkbox) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("researcher",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
+
+        assert cookie != null;
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
         Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(LocalDate.now(),researcher);
 
@@ -88,73 +91,19 @@ public class ResearcherController {
 
     @RequestMapping("/downloadTimesheet")
     public String downloadTimesheet(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("researcher",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
         Project project = projectRepository.findById(id);
+
+        assert cookie != null;
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue()); //Siamo in un punto dove abbiamo per forza un researcher
 
         model.addAttribute("project", project);
         model.addAttribute("validatedMonths",getWorkedMonth(project, researcher));
         model.addAttribute("username", cookie.getValue());
         return "downloadTimesheet";
-    }
-
-    private boolean isHoliday(LocalDate date) {
-        int year = date.getYear();
-
-        // Festività fisse
-        List<LocalDate> fixedHolidays = List.of(
-                LocalDate.of(year, Month.JANUARY, 1),     // Capodanno
-                LocalDate.of(year, Month.JANUARY, 6),     // Epifania
-                LocalDate.of(year, Month.APRIL, 25),      // Festa della Liberazione
-                LocalDate.of(year, Month.MAY, 1),         // Festa dei lavoratori
-                LocalDate.of(year, Month.JUNE, 2),        // Festa della Repubblica
-                LocalDate.of(year, Month.AUGUST, 15),     // Ferragosto
-                LocalDate.of(year, Month.NOVEMBER, 1),    // Tutti i Santi
-                LocalDate.of(year, Month.DECEMBER, 8),    // Immacolata Concezione
-                LocalDate.of(year, Month.DECEMBER, 25),  // Natale
-                LocalDate.of(year, Month.DECEMBER, 26)    // Santo Stefano
-        );
-
-        // Controllo festività fisse
-        if (fixedHolidays.contains(date)) {
-            return true;
-        }
-
-        // Controllo Pasqua e Pasquetta (variabili)
-        LocalDate easterSunday = getEasterSunday(year);
-        LocalDate easterMonday = easterSunday.plusDays(1);
-        if (date.equals(easterSunday) || date.equals(easterMonday)) {
-            return true;
-        }
-
-        // Controllo fine settimana
-        DayOfWeek dayOfWeek = date.getDayOfWeek();
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private LocalDate getEasterSunday(int year) {
-        int a = year % 19;
-        int b = year / 100;
-        int c = year % 100;
-        int d = b / 4;
-        int e = b % 4;
-        int f = (b + 8) / 25;
-        int g = (b - f + 1) / 3;
-        int h = (19 * a + b - d - g + 15) % 30;
-        int i = c / 4;
-        int k = c % 4;
-        int l = (32 + 2 * e + 2 * i - h - k) % 7;
-        int m = (a + 11 * h + 22 * l) / 451;
-        int month = (h + l - 7 * m + 114) / 31;
-        int day = ((h + l - 7 * m + 114) % 31) + 1;
-        return LocalDate.of(year, month, day);
     }
 
     private ArrayList<String> getWorkedMonth(Project project, Researcher researcher){
@@ -167,30 +116,6 @@ public class ResearcherController {
             }
         }
         return monthYearList;
-    }
-
-    private boolean isValidUrl(HttpServletRequest request){
-        String url = "researcher";
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    return ("redirect:/"+url).equals(getIndexByUser(request));
-                }
-            }
-        }
-        return false;
-    }
-
-    private String getIndexByUser(HttpServletRequest request){
-        Cookie cookie = getCookieByName(request,"userLoggedIn");
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Supervisor){
-            return "redirect:/supervisor";
-        }
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Researcher){
-            return "redirect:/researcher";
-        }
-        return "redirect:/administrator";
     }
 
     private Cookie getCookieByName(HttpServletRequest request, String cookieName) {

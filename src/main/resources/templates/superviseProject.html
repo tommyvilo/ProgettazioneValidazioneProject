@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <title th:text="'Supervise Project - ' + ${project.getTitle()}">Supervise Project - </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -115,16 +115,6 @@
         console.log("Sorted Initial:", sortedInitial);
 
         document.getElementById('save-button').style.display = changesMade ? 'block' : 'none';
-    }
-
-    function saveChanges() {
-        if (changesMade) {
-            alert('Changes have been saved!');
-            const checkboxes = document.querySelectorAll('#researcher-table input[type="checkbox"]');
-            selectedIds = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
-            changesMade = false;
-            document.getElementById('save-button').style.display = 'none';
-        }
     }
 </script>
 

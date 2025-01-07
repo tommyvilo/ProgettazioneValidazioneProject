@@ -1,14 +1,10 @@
 package Pages;
 
-import it.univr.Model.User.Researcher;
-import it.univr.Model.User.Supervisor;
-import it.univr.Repository.UserRepository;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ResearcherPage extends PageObject {
@@ -33,8 +29,6 @@ public class ResearcherPage extends PageObject {
 
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
-
-    private String sliderValue;
 
     public ResearcherPage(WebDriver driver) {
         super(driver);

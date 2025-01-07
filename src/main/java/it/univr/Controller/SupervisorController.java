@@ -29,13 +29,16 @@ public class SupervisorController {
     private ProjectRepository projectRepository;
     @Autowired
     private WorkingTimeRepository wtRepository;
+    @Autowired
+    private TimeTrackingController ttController;
 
     @RequestMapping("/supervisor")
     public String supervisor(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
+        assert cookie != null;
         model.addAttribute("projects", projectRepository.findAllBySupervisor((Supervisor)userRepository.findByUsername(cookie.getValue())));
         model.addAttribute("username", cookie.getValue());
         return "supervisor";
@@ -45,11 +48,12 @@ public class SupervisorController {
     public String saveProjectResearcher(HttpServletRequest request,
                                         @RequestParam(name="idResearchers") List<Long> ids,
                                         @RequestParam(name="projectId") Long projectId) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Project project = projectRepository.findById(projectId).orElse(null);
 
+        assert project != null;
         List<Long> currentResearchersProjectIds = project.getResearchers().stream().map(Researcher::getId).toList();
         List<Researcher> newResearchers = new ArrayList<>();
 
@@ -71,7 +75,7 @@ public class SupervisorController {
 
     @RequestMapping("/validationTimesheet")
     public String validationTimesheet(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
@@ -85,7 +89,9 @@ public class SupervisorController {
 
         model.addAttribute("workedMonthYear",wts);
         model.addAttribute("researchers",researchers);
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
+
         return "validationTimesheet";
     }
 
@@ -105,7 +111,7 @@ public class SupervisorController {
 
     @RequestMapping("/projectManagement")
     public String projectManagement(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
@@ -125,32 +131,9 @@ public class SupervisorController {
         model.addAttribute("selectedResearcherIds",listaIdRicercatori);
         model.addAttribute("allResearcher",listaRicercatori);
         model.addAttribute("project",projectRepository.findById(id));
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "superviseProject";
-    }
-
-    private boolean isValidUrl(HttpServletRequest request){
-        String url = "supervisor";
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    return ("redirect:/"+url).equals(getIndexByUser(request));
-                }
-            }
-        }
-        return false;
-    }
-
-    private String getIndexByUser(HttpServletRequest request){
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Supervisor){
-            return "redirect:/supervisor";
-        }
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Researcher){
-            return "redirect:/researcher";
-        }
-        return "redirect:/administrator";
     }
 
     private Cookie getCookieByName(HttpServletRequest request, String cookieName) {

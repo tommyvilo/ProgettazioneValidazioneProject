@@ -17,18 +17,15 @@ public class Project {
     private String cfSoggetto;
 
     @ManyToOne
-    @JoinColumn(name= "id_supervisor")
+    //@JoinColumn(name= "id_supervisor")
     private Supervisor supervisor;
 
-    /*@ElementCollection
-    private List<Long> researchers = new ArrayList<>();*/
-
     @ManyToMany
-    @JoinTable(
+    /*@JoinTable(
             name = "project_researcher", // Nome della tabella di join
             joinColumns = @JoinColumn(name = "id_researcher"), // Colonna di join per Student
             inverseJoinColumns = @JoinColumn(name = "id_project") // Colonna di join per Course
-    )
+    )*/
     private List<Researcher> researchers = new ArrayList<>();
 
     protected Project() {}

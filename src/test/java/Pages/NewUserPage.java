@@ -1,11 +1,8 @@
 package Pages;
 
-import org.hibernate.annotations.processing.Find;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-
-import java.util.List;
 
 public class NewUserPage extends PageObject {
 

@@ -29,20 +29,23 @@ public class AdministratorController {
     private ProjectRepository projectRepository;
     @Autowired
     private WorkingTimeRepository wtRepository;
+    @Autowired
+    private TimeTrackingController ttController;
 
     @RequestMapping("/administrator")
     public String administrator(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "administrator";
     }
 
     @RequestMapping("/manageUsers")
     public String manageUsers(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -53,16 +56,18 @@ public class AdministratorController {
             }
         }
         model.addAttribute("users",users);
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "manageUsers";
     }
 
     @RequestMapping("/newUser")
     public String newUser(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "newUser";
     }
@@ -82,18 +87,19 @@ public class AdministratorController {
 
     @RequestMapping("/manageProjects")
     public String manageProject(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
         model.addAttribute("projects", projectRepository.findAll());
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "manageProjects";
     }
 
     @RequestMapping("/newProject")
     public String newProject(HttpServletRequest request, Model model) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -104,13 +110,14 @@ public class AdministratorController {
             }
         }
         model.addAttribute("supervisors", users);
+        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "newProject";
     }
 
     @RequestMapping("/deleteUser")
     public String deleteUser(HttpServletRequest request, @RequestParam(name="id") Long id) {
-        if(!isValidUrl(request)){
+        if(ttController.isValidUrl("administrator",request)){
             return "redirect:/";
         }
 
@@ -141,31 +148,6 @@ public class AdministratorController {
         newProject.setSupervisor((Supervisor) userRepository.findById(supervisor).orElse(null));
         projectRepository.save(newProject);
         return "redirect:/manageProjects";
-    }
-
-    private boolean isValidUrl(HttpServletRequest request){
-        String url = "administrator";
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("userLoggedIn".equals(cookie.getName())) {
-                    return ("redirect:/"+url).equals(getIndexByUser(request));
-                }
-            }
-        }
-        return false;
-    }
-
-    private String getIndexByUser(HttpServletRequest request){
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Supervisor){
-            return "redirect:/supervisor";
-        }
-        if(userRepository.findByUsername(cookie.getValue()) instanceof Researcher){
-            return "redirect:/researcher";
-        }
-        return "redirect:/administrator";
     }
 
     private Cookie getCookieByName(HttpServletRequest request, String cookieName) {
