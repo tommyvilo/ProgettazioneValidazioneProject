@@ -34,7 +34,7 @@ public class AdministratorController {
 
     @RequestMapping("/administrator")
     public String administrator(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -45,7 +45,7 @@ public class AdministratorController {
 
     @RequestMapping("/manageUsers")
     public String manageUsers(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -63,7 +63,7 @@ public class AdministratorController {
 
     @RequestMapping("/newUser")
     public String newUser(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -87,7 +87,7 @@ public class AdministratorController {
 
     @RequestMapping("/manageProjects")
     public String manageProject(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -99,7 +99,7 @@ public class AdministratorController {
 
     @RequestMapping("/newProject")
     public String newProject(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request, "userLoggedIn");
@@ -117,21 +117,39 @@ public class AdministratorController {
 
     @RequestMapping("/deleteUser")
     public String deleteUser(HttpServletRequest request, @RequestParam(name="id") Long id) {
-        if(ttController.isValidUrl("administrator",request)){
+        if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
 
-        Researcher researcher = (Researcher)userRepository.findById(id).orElse(null);
+        Utente utente = userRepository.findById(id).orElse(null);
 
-        for(WorkingTime wt: wtRepository.findByResearcher(researcher)){
+        for(WorkingTime wt: wtRepository.findByUtente(utente)){
             wtRepository.deleteById(wt.getId());
         }
 
-        for(Project pj: projectRepository.findAllByResearchersContains(researcher)){
-            List<Researcher> researchers = pj.getResearchers();
-            researchers.remove(researcher);
-            pj.setResearchers(researchers);
-            projectRepository.save(pj);
+        if(utente instanceof Researcher) {
+            for(WorkingTime wt: wtRepository.findByUtente(utente)){
+                wtRepository.delete(wt);
+            }
+            for (Project pj : projectRepository.findAllByResearchersContains((Researcher) utente)) {
+                List<Researcher> researchers = pj.getResearchers();
+                researchers.remove(utente);
+                pj.setResearchers(researchers);
+                projectRepository.save(pj);
+            }
+        } else {
+            for(WorkingTime wt: wtRepository.findByUtente(utente)){
+                wtRepository.deleteById(wt.getId());
+            }
+
+            for (Project pj : projectRepository.findAllBySupervisor((Supervisor) utente)) {
+                List<Researcher> researchers = pj.getResearchers();
+
+                for(Researcher researcher : researchers){
+                    wtRepository.deleteByProjectAndUtente(pj,researcher);
+                }
+                projectRepository.delete(pj);
+            }
         }
 
         userRepository.deleteById(id);

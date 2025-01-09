@@ -12,13 +12,14 @@
     <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
-<!-- Selezione data -->
-<div style="text-align: center; margin: 20px;">
-    <label for="sceltaData">Seleziona una data:</label>
-    <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}" onchange="updateDate(this)">
-</div>
+
 
 <form action="saveWorkingTime">
+    <!-- Selezione data -->
+    <div style="text-align: center; margin: 20px;">
+        <label for="sceltaData">Seleziona una data:</label>
+        <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}" onchange="updateDate(this)">
+    </div>
     <div class="table-container" id="projectTableContainer">
         <h1>PROJECT LIST</h1>
         <table>
@@ -39,7 +40,8 @@
                 <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
                 <td>
                     <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
-                           th:value="${hour.workedHours}" oninput="updateHours(this)">
+                           th:disabled="${hour.getValidated() ? 'disabled' : null}" th:value="${hour.workedHours}" oninput="updateHours(this)">
+                    <input type="hidden" name="hours" th:value="${hour.workedHours}" th:if="${hour.getValidated()}">
                     <output th:text="${hour.getFormattedHours()}">1:00</output>
                 </td>
                 <td id="timesheetColumn"><a id="downloadTimesheet" th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
@@ -54,7 +56,7 @@
     <!-- Checkbox per ferie sotto la tabella -->
     <div style="text-align: center; margin: 20px;">
         <label>
-            <input type="checkbox" name="checkbox" id="vacationCheckbox" th:checked="${status}" onchange="toggleVacationMode()"> Segna come giornata di ferie
+            <input type="checkbox" name="checkbox" id="vacationCheckbox" disabled="disabled" th:checked="${status}" onchange="toggleVacationMode()"> Segna come giornata di ferie
         </label>
     </div>
 
@@ -66,31 +68,28 @@
     let initialSliderValues = [];
     let vacationMode = false;
     let festivita = [[${isHoliday}]];
+    let status = Boolean(vacationMode = document.getElementById('vacationCheckbox').checked);
+    let statusSlider = []
+
 
     window.onload = function() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         sliders.forEach(slider => {
             initialSliderValues.push(parseFloat(slider.value));
+            statusSlider.push(slider.disabled);
         });
 
         if (festivita) {
             blockAllDueToHoliday();
         } else {
-            checkTotalHours();
+            const vacationCheckbox = document.getElementById('vacationCheckbox');
+            vacationCheckbox.disabled = false;
+            toggleVacationMode();
         }
 
-        // Imposta il valore iniziale del datePicker
         const datePicker = document.getElementById('sceltaData');
         datePicker.value = [[${selectedDate}]];
     };
-
-    function updateDate(dateInput) {
-        const selectedDate = dateInput.value; // Ottieni la data selezionata
-        if (selectedDate) {
-            // Reindirizza alla pagina researcher.html con il parametro della data
-            window.location.href = `/researcher?date=${selectedDate}`;
-        }
-    }
 
     function blockAllDueToHoliday() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
@@ -100,11 +99,41 @@
 
         const saveButton = document.getElementById('saveButton');
         saveButton.style.display = 'none';
+    }
 
-        const vacationCheckbox = document.getElementById('vacationCheckbox');
-        vacationCheckbox.disabled = true;
+    function toggleVacationMode() {
+        vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
 
-        alert('Oggi non è un giorno lavorativo. Le modifiche non sono consentite.');
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        const saveButton = document.getElementById('saveButton');
+
+        if (vacationMode) {
+            if (status !== vacationMode) {
+                saveButton.classList.remove('disabled');
+                saveButton.textContent = 'Salva ore lavorative';
+                saveButton.disabled = false;
+                saveButton.style.display = 'block';
+            } else {
+                saveButton.style.display = 'none';
+            }
+
+            sliders.forEach(slider => {
+                slider.disabled = true;
+            });
+
+        } else {
+            let i = 0;
+            sliders.forEach(slider => {
+                slider.disabled = statusSlider[i];
+                if(slider.disabled){
+                    const vacationCheckbox = document.getElementById('vacationCheckbox');
+                    vacationCheckbox.disabled = true;
+                }
+                i = i + 1;
+            });
+
+            checkTotalHours();
+        }
     }
 
     function updateHours(slider) {
@@ -145,38 +174,36 @@
         }
     }
 
-    function toggleVacationMode() {
-        vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
-
-        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
-        const saveButton = document.getElementById('saveButton');
-
-        if (vacationMode) {
-            if (status !== vacationMode) {
-                saveButton.classList.remove('disabled');
-                saveButton.textContent = 'Salva ore lavorative';
-                saveButton.disabled = false;
-                saveButton.style.display = 'block';
-            } else {
-                saveButton.style.display = 'none';
-            }
-
-            sliders.forEach(slider => {
-                slider.disabled = true;
-            });
-
-        } else {
-            sliders.forEach(slider => {
-                slider.disabled = false;
-            });
-
-            checkTotalHours();
+    function updateDate(dateInput) {
+        const selectedDate = dateInput.value; // Ottieni la data selezionata
+        if (selectedDate) {
+            // Reindirizza alla pagina researcher.html con il parametro della data
+            window.location.href = `/researcher?date=${selectedDate}`;
         }
     }
 
 
-    let status = Boolean(vacationMode = document.getElementById('vacationCheckbox').checked);
-    toggleVacationMode();
+    document.getElementById('saveButton').addEventListener('click', function (event) {
+        // Abilita temporaneamente gli slider disabilitati
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        sliders.forEach(slider => {
+            if (slider.disabled) {
+                slider.disabled = false;
+                slider.setAttribute('data-temporarily-enabled', 'true'); // Aggiungi un attributo per identificarli
+            }
+        });
+
+        // Permetti l'invio del form
+        setTimeout(() => {
+            // Ripristina lo stato disabilitato per gli slider che erano originariamente disabilitati
+            sliders.forEach(slider => {
+                if (slider.getAttribute('data-temporarily-enabled') === 'true') {
+                    slider.disabled = true;
+                    slider.removeAttribute('data-temporarily-enabled');
+                }
+            });
+        }, 0);
+    });
 </script>
 
 </body>

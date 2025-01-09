@@ -8,7 +8,7 @@
 
 <body>
 <div class="welcome-container">
-    <a href="/supervisor" class="back-button">Go back</a>
+    <a href="/supervisorAction" class="back-button">Go back</a>
     <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
     <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
@@ -38,13 +38,13 @@
         </thead>
 
         <tbody id="timesheetRows">
-        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.getValidated()}" th:data-researcher="${timesheet.getResearcher().username}">
-            <td th:text="${timesheet.getResearcher().username}">10</td>
+        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.getValidated()}" th:data-researcher="${timesheet.getUtente().username}">
+            <td th:text="${timesheet.getUtente().username}">10</td>
             <td id="monthYear" th:text="${timesheet.getMonthYear()}">John</td>
             <td th:text="${timesheet.getProject().title}">Smith</td>
             <td id="status" th:text="${timesheet.getValidated()}">True</td>
             <td><a id="validateLink" th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.getValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
-            <td><a th:href="@{/downloadMonthlyTimesheet(idProject=${timesheet.getProject().getId()}, date=${timesheet.getMonthYear()}, researcherUser=${timesheet.getResearcher().getUsername()})}">Download Timesheet</a></td>
+            <td><a th:href="@{/downloadMonthlyTimesheet(idProject=${timesheet.getProject().getId()}, date=${timesheet.getMonthYear()}, researcherUser=${timesheet.getUtente().getUsername()})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>

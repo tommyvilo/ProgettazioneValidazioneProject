@@ -152,7 +152,9 @@ public class TimeTrackingController {
         WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.of(2025,1,1),2.5,false,false);
         WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.of(2025,1,1),3,false,false);
         WorkingTime w5 = new WorkingTime(r15,p4, LocalDate.of(2024,12,10),4,false,false);
+        WorkingTime w8 = new WorkingTime(r15,p4, LocalDate.of(2024,12,13),4,false,false);
         WorkingTime w4 = new WorkingTime(r15,p4, LocalDate.of(2024,11,19),8,true,false);
+        WorkingTime w9 = new WorkingTime(s1,p1, LocalDate.of(2024,11,19),8,true,false);
 
         wtRepository.save(w1);
         wtRepository.save(w2);
@@ -161,6 +163,8 @@ public class TimeTrackingController {
         wtRepository.save(w5);
         wtRepository.save(w6);
         wtRepository.save(w7);
+        wtRepository.save(w8);
+        wtRepository.save(w9);
     }
 
     @RequestMapping("/")
@@ -228,12 +232,12 @@ public class TimeTrackingController {
     public void downloadMonthlyTimesheet(HttpServletRequest request, HttpServletResponse response,
                                          @RequestParam(name = "idProject") long idProject,
                                          @RequestParam(name = "date") String monthYear,
-                                         @RequestParam(name = "researcherUser") String username){
+                                         @RequestParam(name = "user") String username){
         boolean isSupervisor;
-        if(isValidUrl("researcher",request)){
+        if(!isNotValidUrl("researcher",request)){
             isSupervisor = false;
         }
-        else if(isValidUrl("supervisor",request)){
+        else if(!isNotValidUrl("supervisor",request)){
             isSupervisor = true;
         }
         else {
@@ -245,18 +249,18 @@ public class TimeTrackingController {
         YearMonth yM = YearMonth.of(year, month);
         int totalDays = yM.lengthOfMonth();
 
-        Researcher researcher = (Researcher)userRepository.findByUsername(username);
+        Utente utente = userRepository.findByUsername(username);
         Project project = projectRepository.findById(idProject);
         Supervisor supervisor = project.getSupervisor();
 
-        String outputFilePath = researcher.getName()+researcher.getSurname()+"_"+month+"-"+year+".pdf";
+        String outputFilePath = utente.getName()+utente.getSurname()+"_"+month+"-"+year+".pdf";
 
         try {
             Document document = new Document(PageSize.A4.rotate()); //Creazione documento + rotazione pagina
             PdfWriter.getInstance(document, new FileOutputStream(outputFilePath));
 
             document.open();
-            createDocument(document, totalDays, year, month, project, researcher, supervisor, isSupervisor);
+            createDocument(document, totalDays, year, month, project, utente, supervisor, isSupervisor);
             document.close();
 
             response.setContentType("application/pdf");
@@ -345,7 +349,7 @@ public class TimeTrackingController {
         return professionalRoleTable;
     }
 
-    private PdfPTable personalInfoTable(Researcher researcher, double sumHours){
+    private PdfPTable personalInfoTable(Utente utente, double sumHours){
         PdfPTable personalInfoTable = new PdfPTable(4); // 4 colonne per nome, cognome, codice fiscale, ore totali
         personalInfoTable.setWidthPercentage(100);
         personalInfoTable.setSpacingBefore(0f);
@@ -356,17 +360,17 @@ public class TimeTrackingController {
         PdfPCell cell = new PdfPCell(new Phrase("Nome", headerFont));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         personalInfoTable.addCell(cell);
-        personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getName(), normalFont)));
+        personalInfoTable.addCell(new PdfPCell(new Phrase(utente.getName(), normalFont)));
 
         cell = new PdfPCell(new Phrase("Cognome", headerFont));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         personalInfoTable.addCell(cell);
-        personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getSurname(), normalFont)));
+        personalInfoTable.addCell(new PdfPCell(new Phrase(utente.getSurname(), normalFont)));
 
         cell = new PdfPCell(new Phrase("Codice Fiscale", headerFont));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         personalInfoTable.addCell(cell);
-        personalInfoTable.addCell(new PdfPCell(new Phrase(researcher.getCf(), normalFont)));
+        personalInfoTable.addCell(new PdfPCell(new Phrase(utente.getCf(), normalFont)));
 
         cell = new PdfPCell(new Phrase("Ore Totali Rendicontate", headerFont));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
@@ -408,7 +412,7 @@ public class TimeTrackingController {
         return daysRow;
     }
 
-    private List<Object> thisProjectTable(int totalDays, int year, int month, Researcher researcher, Project project, Map<Integer,Double> totalHoursPerDay){
+    private List<Object> thisProjectTable(int totalDays, int year, int month, Utente utente, Project project, Map<Integer,Double> totalHoursPerDay){
         float[] columnWidths = getColumnWidths(totalDays);
 
         PdfPTable thisProjectTable = new PdfPTable(columnWidths);
@@ -431,7 +435,7 @@ public class TimeTrackingController {
                 cell.setBackgroundColor(Color.GRAY);
             }
             else {
-                WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project);
+                WorkingTime wt = wtRepository.findByDateAndUtenteAndProject(currentDate, utente, project);
                 if (wt!=null){
                     hoursWorkedThisDay = wt.getWorkedHours();
                 }
@@ -454,7 +458,7 @@ public class TimeTrackingController {
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         thisProjectTable.addCell(cell);
 
-        return Arrays.asList(thisProjectTable,totalHoursPerDay);
+        return Arrays.asList(thisProjectTable,totalHoursPerDay,counterWorkedHoursP);
     }
 
     private PdfPTable otherProject(){
@@ -471,7 +475,7 @@ public class TimeTrackingController {
         return otherProject;
     }
 
-    private List<Object> otherProjectTable(boolean isSupervisor, int totalDays, int year, int month, Researcher researcher, Project project, Map<Integer,Double> totalHoursPerDay){
+    private List<Object> otherProjectTable(boolean isSupervisor, int totalDays, int year, int month, Utente utente, Project project, Map<Integer,Double> totalHoursPerDay){
         Font totaleFont = new Font(Font.HELVETICA, 8, Font.BOLD);
         Font normalFont = new Font(Font.HELVETICA, 8);
 
@@ -483,7 +487,13 @@ public class TimeTrackingController {
 
         Font projectFont = new Font(Font.HELVETICA, 8, Font.ITALIC);
 
-        List<Project> otherProjects = projectRepository.findAllByResearchersContains(researcher);
+        List<Project> otherProjects;
+
+        if(isSupervisor) {
+            otherProjects = projectRepository.findAllBySupervisor((Supervisor) utente);
+        } else {
+            otherProjects = projectRepository.findAllByResearchersContains((Researcher) utente);
+        }
         otherProjects.remove(project);
 
         for (Project pjt : otherProjects) {
@@ -502,7 +512,7 @@ public class TimeTrackingController {
                     cell.setBackgroundColor(Color.GRAY);
                 }
                 else {
-                    WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, pjt);
+                    WorkingTime wt = wtRepository.findByDateAndUtenteAndProject(currentDate, utente, pjt);
                     if (wt!=null){
                         hoursWorkedThisDay = wt.getWorkedHours();
                         validated = wt.getValidated();
@@ -524,6 +534,7 @@ public class TimeTrackingController {
                     else {
                         if (hoursWorkedThisDay == 0.0 || !validated) {
                             cell = new PdfPCell(new Phrase());
+                            hoursWorkedThisDay = 0.0;
                         }
                         else {
                             cell = checkCounter(normalFont,hoursWorkedThisDay);
@@ -546,7 +557,7 @@ public class TimeTrackingController {
         return Arrays.asList(otherProjectTable, totalHoursPerDay);
     }
 
-    private PdfPTable leavesRow(int totalDays, int year, int month, Researcher researcher, Project project) {
+    private List<Object> leavesRow(int totalDays, int year, int month, Utente utente, Project project, Map<Integer,Double> totalHoursPerDay) {
         float[] columnWidths = getColumnWidths(totalDays);
 
         PdfPTable leavesRow = new PdfPTable(columnWidths);
@@ -554,6 +565,7 @@ public class TimeTrackingController {
         leavesRow.setSpacingBefore(0f);
 
         Font totaleFont = new Font(Font.HELVETICA, 8, Font.BOLD);
+        Font normalFont = new Font(Font.HELVETICA, 8);
         Font projectFont = new Font(Font.HELVETICA, 8, Font.ITALIC);
 
         int leaveDays = 0;
@@ -570,30 +582,33 @@ public class TimeTrackingController {
                 cell.setBackgroundColor(Color.GRAY);
             }
             else {
-                WorkingTime wt = wtRepository.findByDateAndResearcherAndProject(currentDate, researcher, project);
+                WorkingTime wt = wtRepository.findByDateAndUtenteAndProject(currentDate, utente, project);
                 if (wt!=null){
                     isLeave = wt.getLeave();
                 }
                 if (isLeave) {
                     leaveDays++;
+                    cell = new PdfPCell(new Phrase("8",normalFont));
+                    totalHoursPerDay.put(i, totalHoursPerDay.get(i) + 8);
+                } else {
+                    cell = new PdfPCell(new Phrase());
                 }
-                cell = new PdfPCell(new Phrase());
                 cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             }
             leavesRow.addCell(cell);
         }
 
-        int leaveHours = 0*leaveDays; //Teniamo 0
+        int leaveHours = 8*leaveDays; //Teniamo 0
         cell = new PdfPCell(new Phrase(String.valueOf(leaveHours), totaleFont));
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         leavesRow.addCell(cell);
 
-        return leavesRow;
+        return Arrays.asList(leavesRow, totalHoursPerDay);
     }
 
-    private List<Object> endProjectTable(int totalDays, Map<Integer,Double> totalHoursPerDay) {
+    private PdfPTable endProjectTable(int totalDays, Map<Integer,Double> totalHoursPerDay) {
         float[] columnWidths = getColumnWidths(totalDays);
 
         PdfPTable endProjectTable = new PdfPTable(columnWidths);
@@ -631,7 +646,7 @@ public class TimeTrackingController {
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         endProjectTable.addCell(cell);
 
-        return Arrays.asList(endProjectTable, sumHours);
+        return endProjectTable;
     }
 
     private float[] getColumnWidths(int totalDays) {
@@ -644,7 +659,7 @@ public class TimeTrackingController {
         return columnWidths;
     }
 
-    private void createDocument(Document document, int totalDays, int year, int month, Project project, Researcher researcher, Supervisor supervisor, boolean isSupervisor) {
+    private void createDocument(Document document, int totalDays, int year, int month, Project project, Utente utente, Supervisor supervisor, boolean isSupervisor) {
         Map<Integer,Double> totalHoursPerDay = new HashMap<>();
 
         addTitlePDF(document); //Aggiunta titolo
@@ -654,25 +669,28 @@ public class TimeTrackingController {
         PdfPTable professionalRoleTable = professionalRoleTable();
         PdfPTable daysRow = daysRow(totalDays,year,month);
 
-        List<Object> listaReturn = thisProjectTable(totalDays,year,month,researcher,project,totalHoursPerDay);
+        List<Object> listaReturn = thisProjectTable(totalDays,year,month,utente,project,totalHoursPerDay);
         PdfPTable thisProjectTable = (PdfPTable) listaReturn.get(0);
         totalHoursPerDay = (Map<Integer,Double>) listaReturn.get(1);
+        double counterProject = (double) listaReturn.get(2);
 
         PdfPTable otherProject = otherProject();
 
-        listaReturn = otherProjectTable(isSupervisor, totalDays, year, month, researcher, project, totalHoursPerDay);
+        listaReturn = otherProjectTable(isSupervisor, totalDays, year, month, utente, project, totalHoursPerDay);
         PdfPTable otherProjectTable = (PdfPTable) listaReturn.get(0);
         totalHoursPerDay = (Map<Integer,Double>) listaReturn.get(1);
 
-        PdfPTable leavesRow = leavesRow(totalDays,year,month,researcher,project);
+        listaReturn = leavesRow(totalDays,year,month,utente,project,totalHoursPerDay);;
+        PdfPTable leavesRow = (PdfPTable) listaReturn.get(0);
+        totalHoursPerDay = (Map<Integer,Double>) listaReturn.get(1);
 
-        listaReturn = endProjectTable(totalDays,totalHoursPerDay);
-        PdfPTable endProjectTable = (PdfPTable) listaReturn.get(0);
-        double sumHours = (double) listaReturn.get(1);
+        PdfPTable endProjectTable = endProjectTable(totalDays,totalHoursPerDay);
+        /*PdfPTable endProjectTable = (PdfPTable) listaReturn.get(0);
+        double sumHours = (double) listaReturn.get(1);*/
 
-        PdfPTable personalInfoTable = personalInfoTable(researcher, sumHours);
+        PdfPTable personalInfoTable = personalInfoTable(utente, counterProject);
 
-        PdfPTable signatureTable = signatureTable(researcher, supervisor);
+        PdfPTable signatureTable = signatureTable(utente, supervisor);
 
         document.add(projectTable);
         document.add(professionalRoleTable);
@@ -694,14 +712,14 @@ public class TimeTrackingController {
         }
     }
 
-    private PdfPTable signatureTable(Researcher researcher, Supervisor supervisor){
+    private PdfPTable signatureTable(Utente utente, Supervisor supervisor){
         PdfPTable signatureTable = new PdfPTable(2);
         signatureTable.setWidthPercentage(100);
         signatureTable.setSpacingBefore(30f);
 
         Font normalFont = new Font(Font.HELVETICA, 10);
 
-        signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal dipendente:\n"+researcher.getName() + " " + researcher.getSurname() + "\nData: "+LocalDate.now(), normalFont)));
+        signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal dipendente:\n"+utente.getName() + " " + utente.getSurname() + "\nData: "+LocalDate.now(), normalFont)));
         signatureTable.addCell(new PdfPCell(new Phrase("Firmato dal responsabile del Dipartimento:\nProf. "+supervisor.getName() + " " + supervisor.getSurname() + "\nData: "+LocalDate.now(), normalFont)));
 
         return signatureTable;
@@ -809,7 +827,7 @@ public class TimeTrackingController {
         };
     }
 
-    public boolean isValidUrl(String url, HttpServletRequest request){
+    public boolean isNotValidUrl(String url, HttpServletRequest request){
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {

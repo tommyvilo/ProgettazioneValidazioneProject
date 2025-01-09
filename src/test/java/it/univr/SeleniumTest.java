@@ -43,16 +43,16 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        researcherPage = researcherPage.setDate("2024-12-12");
         researcherPage.signHours(1);
 
-        LocalDate date = LocalDate.now();
-        if(!ttController.isHoliday(date)) {
-            Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(1));
-            Researcher r = (Researcher) userRepository.findByUsername("mot");
+        LocalDate date = LocalDate.of(2024,12,12);
 
-            WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(p,r,date);
-            assertEquals(8,wt.getWorkedHours(),0);
-        }
+        Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(1));
+        Researcher r = (Researcher) userRepository.findByUsername("mot");
+
+        WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(p,r,date);
+        assertEquals(8,wt.getWorkedHours(),0);
 
         researcherPage.logout();
     }
@@ -95,9 +95,9 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
-        SuperviseProjectPage superviseProjectPage = supervisorPage.manageResearcher(0);
+        SupervisorActionPage supervisorActionPage = supervisorPage.goToSupervisorAction();
+        SuperviseProjectPage superviseProjectPage = supervisorActionPage.manageResearcher(0);
         List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
-
         assertEquals(6,superviseProjectPage.getResearcherSelected());
         superviseProjectPage.addResearcher(7);
         List<Researcher> listResearcherUpdated = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
@@ -117,7 +117,8 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
-        ValidationTimesheetPage validationTimesheetPage = supervisorPage.manageValidation();
+        SupervisorActionPage supervisorActionPage = supervisorPage.goToSupervisorAction();
+        ValidationTimesheetPage validationTimesheetPage = supervisorActionPage.manageValidation();
 
         assertEquals("false",validationTimesheetPage.getStatusTimesheet(1));
         validationTimesheetPage.validateTimesheet(1);
@@ -195,7 +196,8 @@ public class SeleniumTest extends BaseTest {
         researcherPage.logout();
 
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
-        ValidationTimesheetPage validationTimesheetPage =  supervisorPage.manageValidation();
+        SupervisorActionPage supervisorActionPage = supervisorPage.goToSupervisorAction();
+        ValidationTimesheetPage validationTimesheetPage =  supervisorActionPage.manageValidation();
         assertEquals("false",validationTimesheetPage.getStatusTimesheet("12/2024"));
         validationTimesheetPage.validateTimesheet("12/2024");
         assertEquals("true",validationTimesheetPage.getStatusTimesheet("12/2024"));
@@ -245,7 +247,8 @@ public class SeleniumTest extends BaseTest {
         loginPage = manageProjectPage.logout();
 
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("mattia","mattevino",userRepository);
-        SuperviseProjectPage superviseProjectPage = supervisorPage.manageResearcher(1);
+        SupervisorActionPage supervisorActionPage = supervisorPage.goToSupervisorAction();
+        SuperviseProjectPage superviseProjectPage = supervisorActionPage.manageResearcher(1);
 
         List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
 
@@ -264,8 +267,14 @@ public class SeleniumTest extends BaseTest {
         Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(2));
         Researcher r = (Researcher) userRepository.findByUsername("nicozerman");
 
-        WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(p,r,date);
+        WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(p,r,date);
         assertEquals(8,wt.getWorkedHours(),0);
         researcherPage.logout();
     }
+
+
+
+    /*
+    delete supervisor
+     */
 }

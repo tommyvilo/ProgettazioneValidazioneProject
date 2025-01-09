@@ -163,3 +163,36 @@ a:hover {
     color: #ccc;
     pointer-events: none;
 }
+
+/* Aggiungi stili per i tasti */
+.logout-button {
+    padding: 10px 20px;
+    background-color: #e74c3c;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.supervisor-button {
+    padding: 10px 20px;
+    background-color: #3498db;;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.logout-button:hover{
+    background-color: #c0392b;
+}
+
+.supervisor-button:hover{
+    background-color: #2980b9;
+}
+
+/* Separazione dei pulsanti */
+.button-container {
+    display: flex;
+    gap: 20px; /* Spazio tra i pulsanti */
+}

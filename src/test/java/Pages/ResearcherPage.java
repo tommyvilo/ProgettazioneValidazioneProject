@@ -27,6 +27,9 @@ public class ResearcherPage extends PageObject {
     @FindBy(xpath="//h1[@id='welcomeTitle']")
     private WebElement welcomeTitle;
 
+    @FindBy(xpath="//input[@name='selectedDate']")
+    private WebElement datePicker;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -38,6 +41,12 @@ public class ResearcherPage extends PageObject {
         Actions actions = new Actions(driver);
         actions.dragAndDropBy(sliderList.get(index), 100, 0).perform();
         saveButton.click();
+    }
+
+    public ResearcherPage setDate(String date){
+        datePicker.sendKeys(date);
+        datePicker.click();
+        return new ResearcherPage(driver);
     }
 
     public String getProjectTitle(int index){

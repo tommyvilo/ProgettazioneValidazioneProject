@@ -33,22 +33,54 @@ public class SupervisorController {
     private TimeTrackingController ttController;
 
     @RequestMapping("/supervisor")
-    public String supervisor(HttpServletRequest request, Model model) {
-        if(ttController.isValidUrl("supervisor",request)){
+    public String supervisor(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) LocalDate date) {
+        if(ttController.isNotValidUrl("supervisor",request)){
+            return "redirect:/";
+        }
+        Cookie cookie = getCookieByName(request,"userLoggedIn");
+
+        assert cookie != null;
+        Supervisor supervisor = (Supervisor) userRepository.findByUsername(cookie.getValue());
+
+        if(date==null){
+            date = LocalDate.now();
+        }
+
+        for(Project project : projectRepository.findAllBySupervisor(supervisor)){
+            if (wtRepository.getWorkingTimeByProjectAndUtenteAndDate(project,supervisor,date)==null){
+                wtRepository.save(new WorkingTime(supervisor,project,date,0 ,false,false));
+            }
+        }
+
+
+        model.addAttribute("hours", wtRepository.findByDateAndUtente(date,supervisor));
+        model.addAttribute("username", cookie.getValue());
+        model.addAttribute("status", wtRepository.getTopByUtenteAndDate(supervisor,date).getLeave());
+        model.addAttribute("selectedDate", date);
+        model.addAttribute("isHoliday",ttController.isHoliday(date));
+
+        return "supervisor";
+    }
+
+    @RequestMapping("/supervisorAction")
+    public String supervisorAction(HttpServletRequest request, Model model) {
+        if(ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
         assert cookie != null;
         model.addAttribute("projects", projectRepository.findAllBySupervisor((Supervisor)userRepository.findByUsername(cookie.getValue())));
         model.addAttribute("username", cookie.getValue());
-        return "supervisor";
+
+        return "supervisorAction";
     }
+
 
     @RequestMapping("/saveProjectResearcher")
     public String saveProjectResearcher(HttpServletRequest request,
                                         @RequestParam(name="idResearchers") List<Long> ids,
                                         @RequestParam(name="projectId") Long projectId) {
-        if(ttController.isValidUrl("supervisor",request)){
+        if(ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Project project = projectRepository.findById(projectId).orElse(null);
@@ -60,7 +92,7 @@ public class SupervisorController {
         for(Long id : ids){
             Researcher current = (Researcher) userRepository.findById(id).orElse(null);
             if (currentResearchersProjectIds.contains(id) && !ids.contains(id)) {
-                wtRepository.deleteByProjectAndResearcher(project,current);
+                wtRepository.deleteByProjectAndUtente(project,current);
             }
             else{
                 newResearchers.add(current);
@@ -70,15 +102,18 @@ public class SupervisorController {
         project.setResearchers(newResearchers);
         projectRepository.save(project);
 
-        return "redirect:/projectManagement?id="+projectId;
+        return "redirect:/superviseProject?id="+projectId;
     }
 
     @RequestMapping("/validationTimesheet")
     public String validationTimesheet(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(ttController.isValidUrl("supervisor",request)){
+        if(ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
+
+        assert cookie != null;
+        Supervisor supervisor = (Supervisor) userRepository.findByUsername(cookie.getValue());
         Project project = projectRepository.findById(id);
         Iterable<Researcher> researchers = projectRepository.findResearchersByProjectId(id);
 
@@ -86,10 +121,10 @@ public class SupervisorController {
         for(Researcher researcher : researchers){
             wts.addAll(getWorkedMonthWt(project,researcher));
         }
+        wts.addAll(getWorkedMonthWt(project,supervisor));
 
         model.addAttribute("workedMonthYear",wts);
         model.addAttribute("researchers",researchers);
-        assert cookie != null;
         model.addAttribute("username", cookie.getValue());
 
         return "validationTimesheet";
@@ -98,20 +133,30 @@ public class SupervisorController {
     @RequestMapping("/approveTimesheet")
     public String approveTimesheet(@RequestParam(name="id") long id) {
         WorkingTime wt = wtRepository.findById(id);
-        Researcher researcher = wt.getResearcher();
+        Utente utente = wt.getUtente();
         Project project = wt.getProject();
         LocalDate date = wt.getDate();
 
-        for (WorkingTime everyWt: wtRepository.findAllByDateBetweenAndProjectAndResearcher(LocalDate.of(date.getYear(),date.getMonth(),1),LocalDate.of(date.getYear(),date.getMonth(), YearMonth.of(date.getYear(),date.getMonth()).lengthOfMonth()),project,researcher)){
+        List<Integer> datePresenti = new ArrayList<>();
+
+        for (WorkingTime everyWt: wtRepository.findAllByDateBetweenAndProjectAndUtente(LocalDate.of(date.getYear(),date.getMonth(),1),LocalDate.of(date.getYear(),date.getMonth(), YearMonth.of(date.getYear(),date.getMonth()).lengthOfMonth()),project,utente)){
             everyWt.setValidated(true);
+            datePresenti.add(everyWt.getDate().getDayOfMonth());
             wtRepository.save(everyWt);
         }
+
+        for(int i=1; i<=YearMonth.of(date.getYear(),date.getMonth()).lengthOfMonth(); i++){
+            if(!datePresenti.contains(i)){
+                wtRepository.save(new WorkingTime(utente, project, LocalDate.of(date.getYear(), date.getMonth(), i), 0, true, false));
+            }
+        }
+
         return "redirect:/validationTimesheet?id="+wt.getProject().getId();
     }
 
-    @RequestMapping("/projectManagement")
-    public String projectManagement(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(ttController.isValidUrl("supervisor",request)){
+    @RequestMapping("/superviseProject")
+    public String superviseProject(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
+        if(ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
@@ -148,8 +193,8 @@ public class SupervisorController {
         return null;
     }
 
-    private ArrayList<WorkingTime> getWorkedMonthWt(Project project, Researcher researcher){
-        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByResearcherAndProject(researcher, project);
+    private ArrayList<WorkingTime> getWorkedMonthWt(Project project, Utente utente){
+        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByUtenteAndProject(utente, project);
         ArrayList<WorkingTime> listWts = new ArrayList<>();
 
         ArrayList<String> monthYearList = new ArrayList<>();

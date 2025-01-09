@@ -111,10 +111,10 @@ public class UnitTest {
 
         assertNull(wt.getId());
 
-        assertEquals(r,wt.getResearcher());
+        assertEquals(r,wt.getUtente());
         Researcher r2 = new Researcher("tom","123toor","Tommaso","Vilotto","VLTTMS02B18F861N");
-        wt.setResearcher(r2);
-        assertEquals(r2,wt.getResearcher());
+        wt.setUtente(r2);
+        assertEquals(r2,wt.getUtente());
 
         assertEquals(p,wt.getProject());
         Project p2 = new Project("QuantumLab", "5J9LMNO", "5D", "UniTO", "35872");

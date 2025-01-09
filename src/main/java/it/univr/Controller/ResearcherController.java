@@ -2,6 +2,7 @@ package it.univr.Controller;
 
 import it.univr.Model.Project;
 import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Utente;
 import it.univr.Model.WorkingTime;
 import it.univr.Repository.ProjectRepository;
 import it.univr.Repository.UserRepository;
@@ -32,7 +33,7 @@ public class ResearcherController {
 
     @RequestMapping("/researcher")
     public String researcher(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) LocalDate date) {
-        if(ttController.isValidUrl("researcher",request)){
+        if(ttController.isNotValidUrl("researcher",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
@@ -45,21 +46,19 @@ public class ResearcherController {
         }
 
         for(Project project : projectRepository.findAllByResearchersContains(researcher)){
-            if (wtRepository.getWorkingTimeByProjectAndResearcherAndDate(project,researcher,date)==null){
+            if (wtRepository.getWorkingTimeByProjectAndUtenteAndDate(project,researcher,date)==null){
                 wtRepository.save(new WorkingTime(researcher,project,date,0,false,false));
             }
         }
 
-        model.addAttribute("hours", wtRepository.findByDateAndResearcher(date,researcher));
+        model.addAttribute("hours", wtRepository.findByDateAndUtente(date,researcher));
         model.addAttribute("username", cookie.getValue());
 
-        /*if(wtRepository.getTopByResearcherAndDate(researcher, date)==null){
+        if(wtRepository.getTopByUtenteAndDate(researcher,date)==null){ //Controllo che serve per gli utenti che non hanno nessun progetto assegnato
             model.addAttribute("status",false);
-        }else{
-            model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
-        }*/
-
-        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
+        } else {
+            model.addAttribute("status", wtRepository.getTopByUtenteAndDate(researcher, date).getLeave());
+        }
 
         model.addAttribute("selectedDate", date);
         model.addAttribute("isHoliday",ttController.isHoliday(date));
@@ -69,20 +68,33 @@ public class ResearcherController {
     @RequestMapping("/saveWorkingTime")
     public String saveWorkingTime(HttpServletRequest request,
                                   @RequestParam(name="hours", required=false) List<Double> hours,
-                                  @RequestParam(name="checkbox", required=false) String checkbox) {
-        if(ttController.isValidUrl("researcher",request)){
+                                  @RequestParam(name="checkbox", required=false) String checkbox,
+                                  @RequestParam(name="selectedDate", required=false) LocalDate date) {
+        String userType = "";
+        if(!ttController.isNotValidUrl("researcher",request)){
+            userType = "researcher";
+        }
+        else if(!ttController.isNotValidUrl("supervisor",request)){
+            userType = "supervisor";
+        }
+        else {
             return "redirect:/";
         }
+
         Cookie cookie = getCookieByName(request,"userLoggedIn");
 
+        if(date==null){
+            date = LocalDate.now();
+        }
+
         assert cookie != null;
-        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
-        Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(LocalDate.now(),researcher);
+        Utente utente = userRepository.findByUsername(cookie.getValue());
+        Iterable<Project> listaProject = wtRepository.findProjectsByDateAndResearcher(date,utente);
 
         if(checkbox==null){
             int counter = 0;
             for(Project pj : listaProject){
-                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
+                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(pj,utente,date);
                 wt.setWorkedHours(hours.get(counter));
                 wt.setLeave(false);
                 wtRepository.save(wt);
@@ -90,33 +102,34 @@ public class ResearcherController {
             }
         } else {
             for(Project pj : listaProject){ //settings all working time as 0 hours
-                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndResearcherAndDate(pj,researcher,LocalDate.now());
+                WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(pj,utente,date);
                 wtRepository.deleteById(wt.getId());
-                wtRepository.save(new WorkingTime(researcher,pj,LocalDate.now(),0,false,true));
+                wtRepository.save(new WorkingTime(utente,pj,date,0,false,true));
             }
         }
-        return "redirect:/researcher";
+
+        return "redirect:/"+userType+"?date=" + date;
     }
 
     @RequestMapping("/downloadTimesheet")
     public String downloadTimesheet(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
-        if(ttController.isValidUrl("researcher",request)){
+        if(ttController.isNotValidUrl("researcher",request) && ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
         Cookie cookie = getCookieByName(request,"userLoggedIn");
         Project project = projectRepository.findById(id);
 
         assert cookie != null;
-        Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue()); //Siamo in un punto dove abbiamo per forza un researcher
+        Utente utente = userRepository.findByUsername(cookie.getValue()); //Siamo in un punto dove abbiamo per forza un researcher
 
         model.addAttribute("project", project);
-        model.addAttribute("validatedMonths",getWorkedMonth(project, researcher));
-        model.addAttribute("username", cookie.getValue());
+        model.addAttribute("validatedMonths",getWorkedMonth(project, utente));
+        model.addAttribute("utente", utente);
         return "downloadTimesheet";
     }
 
-    private ArrayList<String> getWorkedMonth(Project project, Researcher researcher){
-        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByValidatedTrueAndResearcherAndProject(researcher, project);
+    private ArrayList<String> getWorkedMonth(Project project, Utente utente){
+        Iterable<WorkingTime> wts = wtRepository.findWorkingTimesByValidatedTrueAndUtenteAndProject(utente, project);
         ArrayList<String> monthYearList = new ArrayList<>();
         for(WorkingTime wt : wts){
             String monthYear = wt.getMonthYear();

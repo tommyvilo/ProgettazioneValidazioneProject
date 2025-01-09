@@ -4,12 +4,13 @@
     <title>Download Timesheet</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="/researcher.css">
+    <link rel="stylesheet" href="/supervisor.css">
 </head>
 
 <body>
 <div class="welcome-container">
-    <a href="/researcher" class="back-button">Go back</a>
-    <h1>Welcome RESEARCHER <span id="username" th:text="${username}">username</span></h1>
+    <a href="/" class="back-button">Go back</a>
+    <h1>Welcome RESEARCHER <span id="username" th:text="${utente.getUsername()}">username</span></h1>
     <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
@@ -38,7 +39,7 @@
         <tbody>
         <tr th:each="month: ${validatedMonths}">
             <td id="monthYear" th:text="${month}">10</td>
-            <td><a id="timesheet" th:href="@{/downloadMonthlyTimesheet(idProject=${project.getId()}, date=${month}, researcherUser=${username})}">Download Timesheet</a></td>
+            <td><a id="timesheet" th:href="@{/downloadMonthlyTimesheet(idProject=${project.getId()}, date=${month}, user=${utente.username})}">Download Timesheet</a></td>
         </tr>
         </tbody>
     </table>

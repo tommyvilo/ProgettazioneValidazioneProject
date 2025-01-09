@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title th:text="'Manage Projects - ' + ${username}">HomePage - Supervisor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="/supervisor.css">
+</head>
+
+<body>
+<div class="welcome-container">
+    <a href="/supervisor" class="back-button">Go back</a>
+    <h1>Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
+    <a href="/logout" class="logout-button">Logout</a>
+</div>
+
+<div class="table-container">
+    <h1>PROJECT LIST</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>TITLE</th>
+            <th>CUP</th>
+            <th>FUNDING AGENCY</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="project: ${projects}">
+            <td id="titleProject" th:text="${project.title}">10</td>
+            <td th:text="${project.cup}">John</td>
+            <td th:text="${project.denominazioneSoggetto}">Smith</td>
+            <td><a id="manageResearcher" th:href="@{superviseProject(id=${project.id})}">manage researcher</a></td>
+            <td><a id="validationTimesheet" th:href="@{validationTimesheet(id=${project.id})}">validate working hours</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

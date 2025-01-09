@@ -2,6 +2,7 @@ package it.univr.Repository;
 
 import it.univr.Model.Project;
 import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Utente;
 import it.univr.Model.WorkingTime;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -9,26 +10,26 @@ import org.springframework.data.repository.CrudRepository;
 import java.time.LocalDate;
 
 public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long> {
-    Iterable<WorkingTime> findByDateAndResearcher(LocalDate date, Researcher researcher);
+    Iterable<WorkingTime> findByDateAndUtente(LocalDate date, Utente utente);
 
-    WorkingTime findByDateAndResearcherAndProject(LocalDate date, Researcher researcher, Project project);
+    WorkingTime findByDateAndUtenteAndProject(LocalDate date, Utente utente, Project project);
 
-    Iterable<WorkingTime> findByResearcher(Researcher researcher);
+    Iterable<WorkingTime> findByUtente(Utente utente);
 
-    void deleteByProjectAndResearcher(Project project, Researcher researcher);
+    void deleteByProjectAndUtente(Project project, Utente utente);
 
-    @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.researcher=?2")
-    Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Researcher researcher);
+    @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.utente=?2")
+    Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Utente utente);
 
-    Iterable<WorkingTime> findWorkingTimesByResearcherAndProject(Researcher researcher, Project project);
+    Iterable<WorkingTime> findWorkingTimesByUtenteAndProject(Utente utente, Project project);
 
-    Iterable<WorkingTime> findWorkingTimesByValidatedTrueAndResearcherAndProject(Researcher researcher, Project project);
+    Iterable<WorkingTime> findWorkingTimesByValidatedTrueAndUtenteAndProject(Utente utente, Project project);
 
-    WorkingTime getWorkingTimeByProjectAndResearcherAndDate(Project project, Researcher researcher, LocalDate date);
+    WorkingTime getWorkingTimeByProjectAndUtenteAndDate(Project project, Utente researcher, LocalDate date);
 
-    WorkingTime getTopByResearcherAndDate(Researcher researcher, LocalDate date);
+    WorkingTime getTopByUtenteAndDate(Utente researcher, LocalDate date);
     
     WorkingTime findById(long id);
 
-    Iterable<WorkingTime> findAllByDateBetweenAndProjectAndResearcher(LocalDate dateAfter, LocalDate dateBefore, Project project, Researcher researcher);
+    Iterable<WorkingTime> findAllByDateBetweenAndProjectAndUtente(LocalDate dateAfter, LocalDate dateBefore, Project project, Utente utente);
 }

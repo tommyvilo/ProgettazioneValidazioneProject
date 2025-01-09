@@ -1,6 +1,7 @@
 package it.univr.Model;
 
 import it.univr.Model.User.Researcher;
+import it.univr.Model.User.Utente;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -14,7 +15,7 @@ public class WorkingTime {
     @GeneratedValue(strategy=GenerationType.AUTO) private Long id;
 
     @ManyToOne
-    private Researcher researcher;
+    private Utente utente;
 
     @ManyToOne
     private Project project;
@@ -28,8 +29,8 @@ public class WorkingTime {
 
     protected WorkingTime() {}
 
-    public WorkingTime(Researcher researcher, Project project, LocalDate date, double workedHours, boolean validated, boolean leave) {
-        this.researcher = researcher;
+    public WorkingTime(Utente utente, Project project, LocalDate date, double workedHours, boolean validated, boolean leave) {
+        this.utente = utente;
         this.project = project;
         this.date = date;
         this.workedHours = workedHours;
@@ -37,12 +38,12 @@ public class WorkingTime {
         this.leave = leave;
     }
 
-    public void setResearcher(Researcher researcher){
-        this.researcher = researcher;
+    public void setUtente(Utente utente){
+        this.utente = utente;
     }
 
-    public Researcher getResearcher(){
-        return researcher;
+    public Utente getUtente(){
+        return utente;
     }
 
     public void setProject(Project project){
