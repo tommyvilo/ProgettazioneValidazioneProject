@@ -31,7 +31,7 @@ public class ResearcherController {
     private TimeTrackingController ttController;
 
     @RequestMapping("/researcher")
-    public String researcher(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public String researcher(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) LocalDate date) {
         if(ttController.isValidUrl("researcher",request)){
             return "redirect:/";
         }
