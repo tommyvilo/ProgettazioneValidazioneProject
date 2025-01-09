@@ -12,52 +12,57 @@
     <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
-<form action="saveWorkingTime">
-<div class="table-container" id="projectTableContainer">
-    <h1>PROJECT LIST</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>TITLE</th>
-            <th>CUP</th>
-            <th>FUNDING AGENCY</th>
-            <th>DAILY WORKING HOURS</th>
-            <th></th>
-        </tr>
-        </thead>
-
-        <tbody>
-        <tr th:each="hour: ${hours}">
-            <td id="projectTitle" th:text="${hour.getProject().title}">Project Title</td>
-            <td th:text="${hour.getProject().cup}">CUP</td>
-            <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
-            <td>
-                <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
-                       th:value="${hour.workedHours}" oninput="updateHours(this)">
-                <output th:text="${hour.getFormattedHours()}">1:00</output>
-            </td>
-            <td id="timesheetColumn"><a id="downloadTimesheet" th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <!-- Pulsante per salvare le ore lavorative -->
-
+<!-- Selezione data -->
+<div style="text-align: center; margin: 20px;">
+    <label for="sceltaData">Seleziona una data:</label>
+    <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}" onchange="updateDate(this)">
 </div>
+
+<form action="saveWorkingTime">
+    <div class="table-container" id="projectTableContainer">
+        <h1>PROJECT LIST</h1>
+        <table>
+            <thead>
+            <tr>
+                <th>TITLE</th>
+                <th>CUP</th>
+                <th>FUNDING AGENCY</th>
+                <th>DAILY WORKING HOURS</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="hour: ${hours}">
+                <td id="projectTitle" th:text="${hour.getProject().title}">Project Title</td>
+                <td th:text="${hour.getProject().cup}">CUP</td>
+                <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
+                <td>
+                    <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
+                           th:value="${hour.workedHours}" oninput="updateHours(this)">
+                    <output th:text="${hour.getFormattedHours()}">1:00</output>
+                </td>
+                <td id="timesheetColumn"><a id="downloadTimesheet" th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Pulsante per salvare le ore lavorative -->
+
+    </div>
+
     <!-- Checkbox per ferie sotto la tabella -->
     <div style="text-align: center; margin: 20px;">
         <label>
             <input type="checkbox" name="checkbox" id="vacationCheckbox" th:checked="${status}" onchange="toggleVacationMode()"> Segna come giornata di ferie
         </label>
     </div>
-    <button class="save-button" id="saveButton"  disabled>Salva ore lavorative</button>
+
+    <button class="save-button" id="saveButton" disabled>Salva ore lavorative</button>
 
 </form>
 
-
-
 <script th:inline="javascript">
-    // Memorizza lo stato iniziale degli slider
     let initialSliderValues = [];
     let vacationMode = false;
     let festivita = [[${isHoliday}]];
@@ -65,48 +70,43 @@
     window.onload = function() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         sliders.forEach(slider => {
-            initialSliderValues.push(parseFloat(slider.value)); // Salva il valore iniziale
+            initialSliderValues.push(parseFloat(slider.value));
         });
 
-
-        // Blocca tutto se è un giorno festivo
         if (festivita) {
             blockAllDueToHoliday();
         } else {
-            checkTotalHours(); // Controlla lo stato iniziale
+            checkTotalHours();
         }
+
+        // Imposta il valore iniziale del datePicker
+        const datePicker = document.getElementById('sceltaData');
+        datePicker.value = [[${selectedDate}]];
     };
 
-    /**
-     * Blocca tutte le interazioni se è un giorno festivo.
-     */
-    function blockAllDueToHoliday() {
-        const tableContainer = document.getElementById('projectTableContainer');
-        const saveButton = document.getElementById('saveButton');
-        const vacationCheckbox = document.getElementById('vacationCheckbox');
-        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+    function updateDate(dateInput) {
+        const selectedDate = dateInput.value; // Ottieni la data selezionata
+        if (selectedDate) {
+            // Reindirizza alla pagina researcher.html con il parametro della data
+            window.location.href = `/researcher.html?date=${selectedDate}`;
+        }
+    }
 
-        // Disabilita gli slider
+    function blockAllDueToHoliday() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         sliders.forEach(slider => {
             slider.disabled = true;
         });
 
-        // Disabilita la tabella
-        // tableContainer.classList.add('disabled');
-
-        // Disabilita il checkbox
-        vacationCheckbox.disabled = true;
-
-        // Nascondi il pulsante di salvataggio
+        const saveButton = document.getElementById('saveButton');
         saveButton.style.display = 'none';
 
-        // Mostra un messaggio di avviso opzionale
+        const vacationCheckbox = document.getElementById('vacationCheckbox');
+        vacationCheckbox.disabled = true;
+
         alert('Oggi non è un giorno lavorativo. Le modifiche non sono consentite.');
     }
 
-    /**
-     * Aggiorna il valore dello slider in formato ore:minuti e verifica lo stato.
-     */
     function updateHours(slider) {
         const value = parseFloat(slider.value);
         const hours = Math.floor(value);
@@ -115,9 +115,6 @@
         checkTotalHours();
     }
 
-    /**
-     * Controlla lo stato degli slider e aggiorna il pulsante di salvataggio.
-     */
     function checkTotalHours() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         const saveButton = document.getElementById('saveButton');
@@ -128,13 +125,11 @@
             const currentValue = parseFloat(slider.value);
             totalHours += currentValue;
 
-            // Controlla se uno slider è diverso dal valore iniziale
             if (currentValue !== initialSliderValues[index]) {
                 hasChanges = true;
             }
         });
 
-        // Gestisci il pulsante di salvataggio
         if (totalHours > 8) {
             saveButton.classList.add('disabled');
             saveButton.textContent = 'Errore: Ore lavorative totali giornaliere superate';
@@ -146,49 +141,41 @@
             saveButton.disabled = false;
             saveButton.style.display = 'block';
         } else {
-            saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
+            saveButton.style.display = 'none';
         }
     }
 
-
-
-    /**
-     * Disabilita la tabella e tutti gli input se il checkbox ferie è spuntato.
-     */
     function toggleVacationMode() {
         vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
 
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
         const saveButton = document.getElementById('saveButton');
 
-        console.log(status + " " + vacationMode + (status===vacationMode))
         if (vacationMode) {
-            if(status!=vacationMode){
+            if (status !== vacationMode) {
                 saveButton.classList.remove('disabled');
                 saveButton.textContent = 'Salva ore lavorative';
                 saveButton.disabled = false;
                 saveButton.style.display = 'block';
+            } else {
+                saveButton.style.display = 'none';
             }
-            else {
-                saveButton.style.display = 'none'; // Nascondi il pulsante se non ci sono modifiche
-            }
-            // Disabilita gli slider
+
             sliders.forEach(slider => {
                 slider.disabled = true;
             });
 
-
         } else {
             sliders.forEach(slider => {
-                slider.disabled = false; // Riabilita gli slider
+                slider.disabled = false;
             });
 
-            checkTotalHours(); // Controlla se ci sono modifiche e mostra il bottone
+            checkTotalHours();
         }
     }
 
+
     let status = Boolean(vacationMode = document.getElementById('vacationCheckbox').checked);
-    // Inizializza la modalità ferie in base alla checkbox
     toggleVacationMode();
 </script>
 

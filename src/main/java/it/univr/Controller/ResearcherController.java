@@ -9,6 +9,7 @@ import it.univr.Repository.WorkingTimeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +31,7 @@ public class ResearcherController {
     private TimeTrackingController ttController;
 
     @RequestMapping("/researcher")
-    public String researcher(HttpServletRequest request, Model model) {
+    public String researcher(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         if(ttController.isValidUrl("researcher",request)){
             return "redirect:/";
         }
@@ -38,7 +39,10 @@ public class ResearcherController {
 
         assert cookie != null;
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
-        LocalDate date = LocalDate.now();
+
+        if(date==null){
+            date = LocalDate.now();
+        }
 
         for(Project project : projectRepository.findAllByResearchersContains(researcher)){
             if (wtRepository.getWorkingTimeByProjectAndResearcherAndDate(project,researcher,date)==null){
@@ -48,11 +52,16 @@ public class ResearcherController {
 
         model.addAttribute("hours", wtRepository.findByDateAndResearcher(date,researcher));
         model.addAttribute("username", cookie.getValue());
-        if(wtRepository.getTopByResearcherAndDate(researcher, date)==null){
+
+        /*if(wtRepository.getTopByResearcherAndDate(researcher, date)==null){
             model.addAttribute("status",false);
         }else{
             model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
-        }
+        }*/
+
+        model.addAttribute("status", wtRepository.getTopByResearcherAndDate(researcher,date).getLeave());
+
+        model.addAttribute("selectedDate", date);
         model.addAttribute("isHoliday",ttController.isHoliday(date));
         return "researcher";
     }
