@@ -16,6 +16,10 @@ public class LoginPage extends PageObject {
     private WebElement passwordField;
     @FindBy(xpath="//button")
     private WebElement button;
+    @FindBy(xpath="//h1[@id='loginTitle']")
+    private WebElement loginTitle;
+    @FindBy(xpath="//div[@id='errorMessage']")
+    private WebElement errorMessage;
 
     public LoginPage(WebDriver driver) {
         super(driver);
@@ -26,9 +30,11 @@ public class LoginPage extends PageObject {
         usernameField.sendKeys(username);
         passwordField.clear();
         passwordField.sendKeys(password);
-
         button.click();
 
+        if(!userRepository.findByUsername(username).getPassword().equals(password)){
+            return new LoginPage(driver);
+        }
         if(userRepository.findByUsername(username) instanceof Researcher){
             return new ResearcherPage(driver);
         }
@@ -37,5 +43,18 @@ public class LoginPage extends PageObject {
         } else {
             return new AdministratorPage(driver);
         }
+    }
+
+    public String getLoginTitle(){
+        return loginTitle.getText();
+    }
+
+    public LoginPage goTo(String url){
+        driver.get(url);
+        return new LoginPage(driver);
+    }
+
+    public String getErrorMessage(){
+        return errorMessage.getText();
     }
 }

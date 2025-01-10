@@ -17,6 +17,9 @@ public class ValidationTimesheetPage extends PageObject {
     @FindBy(xpath="//td[@id='monthYear']")
     private List<WebElement> monthYears;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -52,6 +55,10 @@ public class ValidationTimesheetPage extends PageObject {
 
     public String getStatusTimesheet(int index){
         return status.get(index).getText();
+    }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
     }
 
     public LoginPage logout(){

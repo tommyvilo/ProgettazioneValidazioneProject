@@ -14,6 +14,12 @@ public class ManageUsersPage extends PageObject {
     @FindBy(xpath="//a[@id='deleteUser']")
     private List<WebElement> deleteUser;
 
+    @FindBy(xpath="//td[@id='usernameUser']")
+    private List<WebElement> usernameUserList;
+
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -33,6 +39,22 @@ public class ManageUsersPage extends PageObject {
     public void deleteUser(int index) {
         deleteUser.get(index).click();
     }
+
+    public void deleteUser(String username) {
+        int index = 0;
+        for(WebElement user : usernameUserList) {
+            if(user.getText().equals(username)) {
+                break;
+            }
+            index++;
+        }
+        deleteUser(index);
+    }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
 
     public LoginPage logout(){
         logoutButton.click();

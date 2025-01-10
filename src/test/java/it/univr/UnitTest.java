@@ -1,4 +1,8 @@
 package it.univr;
+import it.univr.Controller.AdministratorController;
+import it.univr.Controller.ResearcherController;
+import it.univr.Controller.SupervisorController;
+import it.univr.Controller.TimeTrackingController;
 import it.univr.Model.Project;
 import it.univr.Model.User.Administrator;
 import it.univr.Model.User.Researcher;
@@ -8,8 +12,11 @@ import it.univr.Model.WorkingTime;
 import it.univr.Repository.ProjectRepository;
 import it.univr.Repository.UserRepository;
 import it.univr.Repository.WorkingTimeRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -141,4 +148,23 @@ public class UnitTest {
         assertEquals("01/2025",wt.getMonthYear());
         assertEquals("3:00",wt.getFormattedHours());
     }
+
+    @Test
+    public void testGetCookieByName() {
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Cookie[] cookies = {
+                new Cookie("user", "tom"),
+                new Cookie("session", "abcd1234"),
+        };
+        Mockito.when(mockRequest.getCookies()).thenReturn(cookies);
+        Cookie result = new TimeTrackingController().getCookieByName(mockRequest, "sessionn");
+        assertNull(result);
+        result = new ResearcherController().getCookieByName(mockRequest, "sessionn");
+        assertNull(result);
+        result = new SupervisorController().getCookieByName(mockRequest, "sessionn");
+        assertNull(result);
+        result = new AdministratorController().getCookieByName(mockRequest, "sessionn");
+        assertNull(result);
+    }
+
 }

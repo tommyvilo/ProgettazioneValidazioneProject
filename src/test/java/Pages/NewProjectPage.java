@@ -24,6 +24,9 @@ public class NewProjectPage extends PageObject {
     @FindBy(xpath="//select[@id='supervisor']")
     private WebElement supervisor;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//button[@id='submit']")
     private WebElement submit;
 
@@ -41,4 +44,9 @@ public class NewProjectPage extends PageObject {
         this.submit.click();
         return new ManageProjectPage(driver);
     }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
 }

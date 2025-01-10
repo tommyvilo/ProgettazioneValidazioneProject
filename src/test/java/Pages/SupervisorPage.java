@@ -1,5 +1,6 @@
 package Pages;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -29,6 +30,9 @@ public class SupervisorPage extends PageObject {
 
     @FindBy(xpath="//h1[@id='welcomeTitle']")
     private WebElement welcomeTitle;
+
+    @FindBy(xpath="//input[@name='selectedDate']")
+    private WebElement datePicker;
 
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
@@ -69,6 +73,17 @@ public class SupervisorPage extends PageObject {
 
     public String getWelcomeString(){
         return welcomeTitle.getText();
+    }
+
+    public SupervisorPage goTo(String url){
+        driver.get(url);
+        return new SupervisorPage(driver);
+    }
+
+    public SupervisorPage setDate(String date){
+        datePicker.sendKeys(date);
+        datePicker.click();
+        return new SupervisorPage(driver);
     }
 
     public LoginPage logout(){

@@ -14,6 +14,9 @@ public class ManageProjectPage extends PageObject {
     @FindBy(xpath="//tr[@id='project']")
     private List<WebElement> projects;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -29,6 +32,11 @@ public class ManageProjectPage extends PageObject {
     public int projectsNumber(){
         return projects.size();
     }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
 
     public LoginPage logout(){
         logoutButton.click();

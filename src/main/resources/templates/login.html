@@ -8,8 +8,8 @@
 
 <body>
 <div class="login-form">
-    <h1>Login</h1>
-    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+    <h1 id="loginTitle" >Login</h1>
+    <div th:if="${error}" class="error-message" th:text="${error}" id="errorMessage" ></div>
     <form action="loginUser" method="post">
         <input type="text" id="username" name="user" placeholder="Username" required>
         <input type="password" id="password" name="psw" placeholder="Password" required>

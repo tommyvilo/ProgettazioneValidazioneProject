@@ -14,6 +14,9 @@ public class DownloadTimesheetPage extends PageObject {
     @FindBy(xpath="//td[@id='monthYear']")
     private List<WebElement> monthYears;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -36,6 +39,11 @@ public class DownloadTimesheetPage extends PageObject {
         }
         return false;
     }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
 
     public LoginPage logout(){
         logoutButton.click();

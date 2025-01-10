@@ -101,12 +101,15 @@ public class TimeTrackingController {
         Project p3 = new Project("GreenTech", "3G7HJKL", "3B", "Sapienza", "14276");
         Project p4 = new Project("SmartCity", "4H8KLMN", "4C", "Unipd", "25094");
         Project p5 = new Project("QuantumLab", "5J9LMNO", "5D", "UniTO", "35872");
+        Project p6 = new Project("ChatBot", "1S4DFFF", "6E", "Univr", "97820");
+
 
         p1.setSupervisor(s1);
         p2.setSupervisor(s2);
         p3.setSupervisor(s3);
         p4.setSupervisor(s4);
         p5.setSupervisor(s5);
+        p6.setSupervisor(s1);
 
         p1.addResearcher(r1);
         p1.addResearcher(r2);
@@ -140,11 +143,15 @@ public class TimeTrackingController {
 
         p1.addResearcher(r15);
 
+        p6.addResearcher(r3);
+        p6.addResearcher(r4);
+
         projectRepository.save(p1);
         projectRepository.save(p2);
         projectRepository.save(p3);
         projectRepository.save(p4);
         projectRepository.save(p5);
+        projectRepository.save(p6);
 
         WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.of(2025,1,1),2,false,false);
         WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,false,false);
@@ -155,6 +162,7 @@ public class TimeTrackingController {
         WorkingTime w8 = new WorkingTime(r15,p4, LocalDate.of(2024,12,13),4,false,false);
         WorkingTime w4 = new WorkingTime(r15,p4, LocalDate.of(2024,11,19),8,true,false);
         WorkingTime w9 = new WorkingTime(s1,p1, LocalDate.of(2024,11,19),8,true,false);
+        WorkingTime w10 = new WorkingTime(s1,p6, LocalDate.of(2024,11,19),8,true,false);
 
         wtRepository.save(w1);
         wtRepository.save(w2);
@@ -725,7 +733,7 @@ public class TimeTrackingController {
         return signatureTable;
     }
 
-    private Cookie getCookieByName(HttpServletRequest request, String cookieName) {
+    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -838,4 +846,5 @@ public class TimeTrackingController {
         }
         return true;
     }
+
 }

@@ -140,7 +140,7 @@ public class ResearcherController {
         return monthYearList;
     }
 
-    private Cookie getCookieByName(HttpServletRequest request, String cookieName) {
+    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {

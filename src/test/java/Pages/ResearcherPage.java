@@ -71,6 +71,20 @@ public class ResearcherPage extends PageObject {
         return welcomeTitle.getText();
     }
 
+    public boolean isThereProject(String projectName){
+        for(WebElement titleProject : titleList){
+            if(titleProject.getText().equals(projectName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ResearcherPage goTo(String url){
+        driver.get(url);
+        return new ResearcherPage(driver);
+    }
+
     public LoginPage logout(){
         logoutButton.click();
         return new LoginPage(driver);

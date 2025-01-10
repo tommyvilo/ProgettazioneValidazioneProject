@@ -3,6 +3,7 @@ package it.univr.Repository;
 import it.univr.Model.Project;
 import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Utente;
+import it.univr.Model.User.Researcher;
 import it.univr.Model.WorkingTime;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -30,6 +31,8 @@ public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long>
     WorkingTime getTopByUtenteAndDate(Utente researcher, LocalDate date);
     
     WorkingTime findById(long id);
+
+    Iterable<WorkingTime> findAllByUtenteAndProject(Utente researcher, Project project);
 
     Iterable<WorkingTime> findAllByDateBetweenAndProjectAndUtente(LocalDate dateAfter, LocalDate dateBefore, Project project, Utente utente);
 }

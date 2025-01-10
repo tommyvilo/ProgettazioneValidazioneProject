@@ -14,6 +14,9 @@ public class SupervisorActionPage extends PageObject {
     @FindBy(xpath="//a[@id='validationTimesheet']")
     private List<WebElement> validationTimesheets;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     public SupervisorActionPage(WebDriver driver) {
         super(driver);
     }
@@ -27,4 +30,10 @@ public class SupervisorActionPage extends PageObject {
         validationTimesheets.get(0).click();
         return new ValidationTimesheetPage(driver);
     }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
+
 }

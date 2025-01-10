@@ -17,6 +17,9 @@ public class SuperviseProjectPage extends PageObject {
     @FindBy(xpath="//input[@id='projectId']")
     private WebElement projectId;
 
+    @FindBy(xpath="//h1[@id='welcomeTitle']")
+    private WebElement welcomeTitle;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -42,6 +45,11 @@ public class SuperviseProjectPage extends PageObject {
     public String getProjectId(){
         return projectId.getAttribute("value");
     }
+
+    public String getWelcomeString(){
+        return welcomeTitle.getText();
+    }
+
 
     public LoginPage logout(){
         logoutButton.click();

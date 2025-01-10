@@ -9,7 +9,7 @@
 <body>
 <div class="welcome-container">
     <a href="/administrator" class="back-button">Go back</a>
-    <h1>Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
+    <h1 id="welcomeTitle" >Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
     <a id="logout" href="/logout" class="logout-button">Logout</a>
 </div>
 
@@ -31,7 +31,7 @@
         <tr th:each="user : ${users}" th:attr="data-surname=${user.id}">
             <td th:text="${user.getName()}"></td>
             <td th:text="${user.getSurname()}"></td>
-            <td th:text="${user.getUsername()}"></td>
+            <td id="usernameUser" th:text="${user.getUsername()}"></td>
             <td th:text="${user instanceof T(it.univr.Model.User.Supervisor) ? 'Supervisor' : 'Researcher'}"></td>
             <td><a href="#">Manage User</a></td>
             <td><a id="deleteUser" th:href="@{/deleteUser(id=${user.id})}">Delete User</a></td>

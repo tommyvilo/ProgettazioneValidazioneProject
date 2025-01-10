@@ -128,9 +128,8 @@ public class AdministratorController {
         }
 
         if(utente instanceof Researcher) {
-            for(WorkingTime wt: wtRepository.findByUtente(utente)){
-                wtRepository.delete(wt);
-            }
+            wtRepository.deleteAll(wtRepository.findByUtente(utente));
+
             for (Project pj : projectRepository.findAllByResearchersContains((Researcher) utente)) {
                 List<Researcher> researchers = pj.getResearchers();
                 researchers.remove(utente);
@@ -144,9 +143,9 @@ public class AdministratorController {
 
             for (Project pj : projectRepository.findAllBySupervisor((Supervisor) utente)) {
                 List<Researcher> researchers = pj.getResearchers();
-
+                System.out.println(researchers.toString());
                 for(Researcher researcher : researchers){
-                    wtRepository.deleteByProjectAndUtente(pj,researcher);
+                    wtRepository.deleteAll(wtRepository.findAllByUtenteAndProject(researcher,pj));
                 }
                 projectRepository.delete(pj);
             }
@@ -168,7 +167,7 @@ public class AdministratorController {
         return "redirect:/manageProjects";
     }
 
-    private Cookie getCookieByName(HttpServletRequest request, String cookieName) {
+    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
