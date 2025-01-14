@@ -10,6 +10,7 @@ import it.univr.Repository.UserRepository;
 import it.univr.Repository.WorkingTimeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,22 +34,24 @@ public class AdministratorController {
     private TimeTrackingController ttController;
 
     @RequestMapping("/administrator")
-    public String administrator(HttpServletRequest request, Model model) {
+    public String administrator(HttpServletRequest request, HttpServletResponse response, Model model) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request, "userLoggedIn");
         assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "administrator";
     }
 
     @RequestMapping("/manageUsers")
-    public String manageUsers(HttpServletRequest request, Model model) {
+    public String manageUsers(HttpServletRequest request, HttpServletResponse response, Model model) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request, "userLoggedIn");
         ArrayList<Utente> users = new ArrayList<>();
         for(Utente user : userRepository.findAll()){
             if( user instanceof Researcher || user instanceof Supervisor) {
@@ -62,21 +65,22 @@ public class AdministratorController {
     }
 
     @RequestMapping("/newUser")
-    public String newUser(HttpServletRequest request, Model model) {
+    public String newUser(HttpServletRequest request, HttpServletResponse response, Model model) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request, "userLoggedIn");
         assert cookie != null;
         model.addAttribute("username", cookie.getValue());
         return "newUser";
     }
 
     @PostMapping("/createUser")
-    public String createUser(@RequestParam(name="username") String username, @RequestParam(name="password") String password,
+    public String createUser(HttpServletResponse response, @RequestParam(name="username") String username, @RequestParam(name="password") String password,
                              @RequestParam(name="name") String name, @RequestParam(name="surname") String surname,
                              @RequestParam(name="cf") String cf, @RequestParam(name="userType") String userType) {
-
+        response.setHeader("Cache-Control","no-store");
         if(userType.equals("Supervisor")){
             userRepository.save(new Supervisor(username,password,name,surname,cf));
         } else{
@@ -86,11 +90,12 @@ public class AdministratorController {
     }
 
     @RequestMapping("/manageProjects")
-    public String manageProject(HttpServletRequest request, Model model) {
+    public String manageProject(HttpServletRequest request,HttpServletResponse response, Model model) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request, "userLoggedIn");
         model.addAttribute("projects", projectRepository.findAll());
         assert cookie != null;
         model.addAttribute("username", cookie.getValue());
@@ -98,11 +103,12 @@ public class AdministratorController {
     }
 
     @RequestMapping("/newProject")
-    public String newProject(HttpServletRequest request, Model model) {
+    public String newProject(HttpServletRequest request, HttpServletResponse response, Model model) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request, "userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request, "userLoggedIn");
         ArrayList<Supervisor> users = new ArrayList<>();
         for(Utente user : userRepository.findAll()){
             if(user instanceof Supervisor) {
@@ -116,11 +122,11 @@ public class AdministratorController {
     }
 
     @RequestMapping("/deleteUser")
-    public String deleteUser(HttpServletRequest request, @RequestParam(name="id") Long id) {
+    public String deleteUser(HttpServletRequest request, HttpServletResponse response, @RequestParam(name="id") Long id) {
         if(ttController.isNotValidUrl("administrator",request)){
             return "redirect:/";
         }
-
+        response.setHeader("Cache-Control","no-store");
         Utente utente = userRepository.findById(id).orElse(null);
 
         for(WorkingTime wt: wtRepository.findByUtente(utente)){
@@ -137,13 +143,9 @@ public class AdministratorController {
                 projectRepository.save(pj);
             }
         } else {
-            for(WorkingTime wt: wtRepository.findByUtente(utente)){
-                wtRepository.deleteById(wt.getId());
-            }
-
             for (Project pj : projectRepository.findAllBySupervisor((Supervisor) utente)) {
                 List<Researcher> researchers = pj.getResearchers();
-                System.out.println(researchers.toString());
+
                 for(Researcher researcher : researchers){
                     wtRepository.deleteAll(wtRepository.findAllByUtenteAndProject(researcher,pj));
                 }
@@ -157,25 +159,15 @@ public class AdministratorController {
 
 
     @PostMapping("/createProject")
-    public String createProject(@RequestParam(name="title") String title, @RequestParam(name="cup") String cup,
+    public String createProject(HttpServletResponse response, @RequestParam(name="title") String title, @RequestParam(name="cup") String cup,
                                 @RequestParam(name="code") String code, @RequestParam(name="denominazioneSoggetto") String denominazioneSoggetto,
                                 @RequestParam(name="cfSoggetto") String cfSoggetto, @RequestParam(name="supervisor") Long supervisor // ID del supervisore scelto
+
     ) {
+        response.setHeader("Cache-Control","no-store");
         Project newProject = new Project(title,cup,code,denominazioneSoggetto,cfSoggetto);
         newProject.setSupervisor((Supervisor) userRepository.findById(supervisor).orElse(null));
         projectRepository.save(newProject);
         return "redirect:/manageProjects";
-    }
-
-    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(cookieName)) {
-                    return cookie;
-                }
-            }
-        }
-        return null;
     }
 }

@@ -17,8 +17,6 @@ public interface WorkingTimeRepository extends CrudRepository<WorkingTime, Long>
 
     Iterable<WorkingTime> findByUtente(Utente utente);
 
-    void deleteByProjectAndUtente(Project project, Utente utente);
-
     @Query("select wt.project from WorkingTime wt where wt.date=?1 and wt.utente=?2")
     Iterable<Project> findProjectsByDateAndResearcher(LocalDate date, Utente utente);
 

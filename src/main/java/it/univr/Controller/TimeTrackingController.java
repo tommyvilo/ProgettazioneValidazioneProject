@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -153,26 +155,96 @@ public class TimeTrackingController {
         projectRepository.save(p5);
         projectRepository.save(p6);
 
-        WorkingTime w1 = new WorkingTime(r15,p1, LocalDate.of(2025,1,1),2,false,false);
-        WorkingTime w6 = new WorkingTime(r15,p1, LocalDate.of(2024,11,10),2,false,false);
-        WorkingTime w7 = new WorkingTime(r15,p1, LocalDate.of(2024,12,10),2,false,false);
-        WorkingTime w2 = new WorkingTime(r15,p3, LocalDate.of(2025,1,1),2.5,false,false);
-        WorkingTime w3 = new WorkingTime(r15,p4, LocalDate.of(2025,1,1),3,false,false);
-        WorkingTime w5 = new WorkingTime(r15,p4, LocalDate.of(2024,12,10),4,false,false);
-        WorkingTime w8 = new WorkingTime(r15,p4, LocalDate.of(2024,12,13),4,false,false);
-        WorkingTime w4 = new WorkingTime(r15,p4, LocalDate.of(2024,11,19),8,true,false);
-        WorkingTime w9 = new WorkingTime(s1,p1, LocalDate.of(2024,11,19),8,true,false);
-        WorkingTime w10 = new WorkingTime(s1,p6, LocalDate.of(2024,11,19),8,true,false);
+        List<WorkingTime> workingTimes = new ArrayList<>();
 
-        wtRepository.save(w1);
-        wtRepository.save(w2);
-        wtRepository.save(w3);
-        wtRepository.save(w4);
-        wtRepository.save(w5);
-        wtRepository.save(w6);
-        wtRepository.save(w7);
-        wtRepository.save(w8);
-        wtRepository.save(w9);
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 2), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 2), 4, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 3), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 3), 1, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 3), 2.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 4), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 4), 5, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 5), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 5), 1.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 6), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 6), 2.5, true, false));
+
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 9), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 9), 3.5, true, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 10), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 10), 3, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 10), 1, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 11), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 11), 3.5, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 12), 8, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 13), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 13), 4, false, false));
+
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 16), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 16), 4, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 17), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 17), 4.5, true, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 18), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 18), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 18), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 19), 4, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 20), 8, true, false));
+
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 23), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 23), 2.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2024, 12, 24), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 24), 5.5, false, false));
+
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2024, 12, 30), 7, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2024, 12, 31), 8, false, false));
+
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 2), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 2), 3, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 3), 5, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 3), 1.5, false, false));
+
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 6), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 6), 2.5, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 6), 3.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 7), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 7), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 8), 4.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 9), 3.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 9), 1, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 10), 6, false, false));
+
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 13), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 13), 4, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 13), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 14), 2.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 14), 3, true, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 15), 5, true, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 16), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 16), 0, true, true));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 16), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 17), 0, false, true));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 17), 0, true, true));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 17), 0, false, true));
+
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 20), 2, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 20), 3.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 21), 4, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 21), 2, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 22), 7, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 23), 6, true, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 24), 5.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 24), 1, true, false));
+
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 27), 7, false, false));
+        workingTimes.add(new WorkingTime(r15, p4, LocalDate.of(2025, 1, 27), 0.5, false, false));
+        workingTimes.add(new WorkingTime(r15, p1, LocalDate.of(2025, 1, 28), 6, false, false));
+        workingTimes.add(new WorkingTime(r15, p3, LocalDate.of(2025, 1, 28), 1, true, false));
+
+        workingTimes.add(new WorkingTime(s1,p1, LocalDate.of(2024,11,19),4,true,false));
+        workingTimes.add(new WorkingTime(s1,p6, LocalDate.of(2024,11,19),3,true,false));
+        workingTimes.add(new WorkingTime(r1,p1, LocalDate.of(2024,11,19),8,true,false));
+
+        wtRepository.saveAll(workingTimes);
     }
 
     @RequestMapping("/")
@@ -241,6 +313,7 @@ public class TimeTrackingController {
                                          @RequestParam(name = "idProject") long idProject,
                                          @RequestParam(name = "date") String monthYear,
                                          @RequestParam(name = "user") String username){
+        response.setHeader("Cache-Control","no-store");
         boolean isSupervisor;
         if(!isNotValidUrl("researcher",request)){
             isSupervisor = false;
@@ -497,7 +570,7 @@ public class TimeTrackingController {
 
         List<Project> otherProjects;
 
-        if(isSupervisor) {
+        if(utente instanceof Supervisor) {
             otherProjects = projectRepository.findAllBySupervisor((Supervisor) utente);
         } else {
             otherProjects = projectRepository.findAllByResearchersContains((Researcher) utente);
@@ -632,23 +705,14 @@ public class TimeTrackingController {
 
         for (int i = 1; i <= totalDays; i++) {
             double totalHoursDay = totalHoursPerDay.get(i);
-            if(isInteger(totalHoursDay)) {
-                cell = new PdfPCell(new Phrase(String.valueOf((int) totalHoursDay), totaleFont));
-            }
-            else {
-                cell = new PdfPCell(new Phrase(String.valueOf(totalHoursDay), totaleFont));
-            }
+            cell = checkCounter(totaleFont, totalHoursDay);
             cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
             cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             endProjectTable.addCell(cell);
             sumHours += totalHoursPerDay.get(i);
         }
 
-        if(isInteger(sumHours)) {
-            cell = new PdfPCell(new Phrase(String.valueOf((int) sumHours), totaleFont));
-        } else{
-            cell = new PdfPCell(new Phrase(String.valueOf(sumHours), totaleFont));
-        }
+        cell = checkCounter(totaleFont, sumHours);
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -845,6 +909,12 @@ public class TimeTrackingController {
             }
         }
         return true;
+    }
+
+    // Gestione delle eccezioni
+    @ExceptionHandler(Exception.class)
+    public String handleException() {
+        return "error";
     }
 
 }

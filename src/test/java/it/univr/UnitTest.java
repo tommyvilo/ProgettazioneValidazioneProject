@@ -159,12 +159,6 @@ public class UnitTest {
         Mockito.when(mockRequest.getCookies()).thenReturn(cookies);
         Cookie result = new TimeTrackingController().getCookieByName(mockRequest, "sessionn");
         assertNull(result);
-        result = new ResearcherController().getCookieByName(mockRequest, "sessionn");
-        assertNull(result);
-        result = new SupervisorController().getCookieByName(mockRequest, "sessionn");
-        assertNull(result);
-        result = new AdministratorController().getCookieByName(mockRequest, "sessionn");
-        assertNull(result);
     }
 
 }

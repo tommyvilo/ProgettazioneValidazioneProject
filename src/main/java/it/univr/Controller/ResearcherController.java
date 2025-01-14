@@ -9,6 +9,7 @@ import it.univr.Repository.UserRepository;
 import it.univr.Repository.WorkingTimeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -32,11 +33,12 @@ public class ResearcherController {
     private TimeTrackingController ttController;
 
     @RequestMapping("/researcher")
-    public String researcher(HttpServletRequest request, Model model, @RequestParam(name="date", required = false) LocalDate date) {
+    public String researcher(HttpServletRequest request, HttpServletResponse response, Model model, @RequestParam(name="date", required = false) LocalDate date) {
         if(ttController.isNotValidUrl("researcher",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request,"userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request,"userLoggedIn");
 
         assert cookie != null;
         Researcher researcher = (Researcher)userRepository.findByUsername(cookie.getValue());
@@ -67,9 +69,11 @@ public class ResearcherController {
 
     @RequestMapping("/saveWorkingTime")
     public String saveWorkingTime(HttpServletRequest request,
+                                  HttpServletResponse response,
                                   @RequestParam(name="hours", required=false) List<Double> hours,
                                   @RequestParam(name="checkbox", required=false) String checkbox,
                                   @RequestParam(name="selectedDate", required=false) LocalDate date) {
+        response.setHeader("Cache-Control","no-store");
         String userType = "";
         if(!ttController.isNotValidUrl("researcher",request)){
             userType = "researcher";
@@ -81,7 +85,7 @@ public class ResearcherController {
             return "redirect:/";
         }
 
-        Cookie cookie = getCookieByName(request,"userLoggedIn");
+        Cookie cookie = ttController.getCookieByName(request,"userLoggedIn");
 
         if(date==null){
             date = LocalDate.now();
@@ -112,11 +116,12 @@ public class ResearcherController {
     }
 
     @RequestMapping("/downloadTimesheet")
-    public String downloadTimesheet(HttpServletRequest request, Model model, @RequestParam(name="id") long id) {
+    public String downloadTimesheet(HttpServletRequest request, HttpServletResponse response, Model model, @RequestParam(name="id") long id) {
         if(ttController.isNotValidUrl("researcher",request) && ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
-        Cookie cookie = getCookieByName(request,"userLoggedIn");
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request,"userLoggedIn");
         Project project = projectRepository.findById(id);
 
         assert cookie != null;
@@ -138,17 +143,5 @@ public class ResearcherController {
             }
         }
         return monthYearList;
-    }
-
-    public Cookie getCookieByName(HttpServletRequest request, String cookieName) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(cookieName)) {
-                    return cookie;
-                }
-            }
-        }
-        return null;
     }
 }

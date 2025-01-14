@@ -27,7 +27,7 @@ public class SuperviseProjectPage extends PageObject {
         super(driver);
     }
 
-    public void addResearcher(int index){
+    public void selectAndSaveResearcher(int index){
         researchers.get(index).click();
         saveButton.click();
     }

@@ -37,21 +37,21 @@ public class SeleniumTest extends BaseTest {
     private TimeTrackingController ttController;
 
     /*
-        Il ricercatore effettua il login ed inserisce le ore giornaliere, salvandole e poi effettuando il logout
+        Il ricercatore inserisce le ore giornaliere, per poi salvarle
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testInsertWorkingHourByResearcher() {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
-        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("nicozerman","nicksss",userRepository);
         researcherPage = researcherPage.setDate("2024-12-12");
         researcherPage.signHours(1);
 
         LocalDate date = LocalDate.of(2024,12,12);
 
         Project p = projectRepository.findByTitle(researcherPage.getProjectTitle(1));
-        Researcher r = (Researcher) userRepository.findByUsername("mot");
+        Researcher r = (Researcher) userRepository.findByUsername("nicozerman");
 
         WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(p,r,date);
         assertEquals(8,wt.getWorkedHours(),0);
@@ -60,7 +60,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        Il ricercatore effettua il login ed inserisce le ore giornaliere, salvandole e poi effettuando il logout
+        Il responsabile scientifico inserisce le ore giornaliere, per poi salvarle
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -83,7 +83,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        Il ricercatore effettua il login, accede ai vari timesheet del progetto e scarica il primo accessibile
+        Il ricercatore accede ai vari timesheet del progetto e ne scarica uno acessibile
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -91,13 +91,13 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(2);
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(1);
         downloadTimesheetPage.downloadTimesheet();
         downloadTimesheetPage.logout();
     }
 
     /*
-        Il supervisor effettua il login, accede ai vari timesheet del progetto e scarica il primo accessibile
+        Il responsabile scientifico accede ai vari timesheet del progetto e ne scarica uno acessibile
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -111,7 +111,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        Il ricercatore effettua il login e si mette in malattia per la giornata, ed è impossibilitato ad aggiungere le ore
+        Il ricercatore si mette in malattia per la giornata, ed è impossibilitato ad aggiungere le ore
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -127,7 +127,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        Il responsabile scientifico effettua il login, seleziona un progetto ed aggiunge ricercatori a quel progetto
+        Il responsabile scientifico seleziona un progetto ed aggiunge un ricercatore a quel progetto
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -139,21 +139,46 @@ public class SeleniumTest extends BaseTest {
         SuperviseProjectPage superviseProjectPage = supervisorActionPage.manageResearcher(0);
         List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
         assertEquals(6,superviseProjectPage.getResearcherSelected());
-        superviseProjectPage.addResearcher(7);
+        superviseProjectPage.selectAndSaveResearcher(7);
         List<Researcher> listResearcherUpdated = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
 
         assertNotEquals(listResearcher,listResearcherUpdated);
         assertEquals(7,superviseProjectPage.getResearcherSelected());
 
+
         superviseProjectPage.logout();
     }
 
     /*
-        Il responsabile scientifico effettua il login, e controfirma il timesheet di un ricercatore di un progetto
+        Il responsabile scientifico seleziona un progetto e rimuove un ricercatore da quel progetto
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    public void testValidateTimesheet() {
+    public void testRemovingResearcherFromProject() {
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
+        SupervisorActionPage supervisorActionPage = supervisorPage.goToSupervisorAction();
+        SuperviseProjectPage superviseProjectPage = supervisorActionPage.manageResearcher(0);
+        List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
+        assertEquals(6,superviseProjectPage.getResearcherSelected());
+
+        superviseProjectPage.selectAndSaveResearcher(0);
+        List<Researcher> listResearcherUpdated = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
+
+        assertNotEquals(listResearcher,listResearcherUpdated);
+        assertEquals(5,superviseProjectPage.getResearcherSelected());
+
+
+        superviseProjectPage.logout();
+    }
+
+    /*
+        Il responsabile scientifico controfirma e fa il download di un timesheet di un ricercatore del progetto che supervisiona
+     */
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testValidateAndDownloadTimesheet() {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
@@ -163,12 +188,13 @@ public class SeleniumTest extends BaseTest {
         assertEquals("false",validationTimesheetPage.getStatusTimesheet(1));
         validationTimesheetPage.validateTimesheet(1);
         assertEquals("true",validationTimesheetPage.getStatusTimesheet(1));
+        validationTimesheetPage.downloadTimesheet(1);
 
         validationTimesheetPage.logout();
     }
 
     /*
-        L'amministratore accede e aggiunge un utente
+        L'amministratore aggiunge un utente ricercatore
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -188,7 +214,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        L'amministratore accede e aggiunge un progetto
+        L'amministratore aggiunge un progetto
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -208,7 +234,7 @@ public class SeleniumTest extends BaseTest {
     }
 
     /*
-        L'amministratore accede ed elimina un utente
+        L'amministratore elimina un utente ricercatore
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -225,13 +251,38 @@ public class SeleniumTest extends BaseTest {
         manageUsersPage.logout();
     }
 
+    /*
+      L'amministratore accede ed elimina un supervisore
+   */
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testDeleteSupervisor(){
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
+        ManageUsersPage manageUsersPage = administratorPage.manageUsers();
+
+        assertEquals(20,manageUsersPage.usersNumber());
+        manageUsersPage.deleteUser("tom");
+        assertEquals(19,manageUsersPage.usersNumber());
+
+        loginPage = manageUsersPage.logout();
+
+        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        assertFalse(researcherPage.isThereProject("NeuroPlus")); //progetto il cui supervisore era il 15esimo
+        manageUsersPage.logout();
+    }
+
+    /*
+        Il ricercatore nota che non c'è un timesheet scaricabile. Successivamente il supervisore di uno dei suoi progetti valida il timesheet. Infine il ricercatore scarica il timesheet validato.
+     */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testValidationAndDownload(){
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(1);
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(0);
         assertFalse(downloadTimesheetPage.downloadTimesheet("12/2024"));
         researcherPage.logout();
 
@@ -249,6 +300,9 @@ public class SeleniumTest extends BaseTest {
         researcherPage.logout();
     }
 
+    /*
+        L'amministratore crea un utente ricercatore, successivamente quest'ultimo accede alla piattaforma
+     */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testCreateResearcherAndLogin(){
@@ -270,6 +324,11 @@ public class SeleniumTest extends BaseTest {
         researcherPage.logout();
     }
 
+    /*
+
+        L'amministratore aggiunge un progetto con rispettivo supervisor, successivamente il supervisor aggiunge un ricercatore al progetto,
+        infine il ricercatore designato accede e visualizza il nuovo progetto che gli è stato aggiunto
+     */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testCreateAndVerifyProject(){
@@ -293,7 +352,7 @@ public class SeleniumTest extends BaseTest {
         List<Researcher> listResearcher = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
 
         assertEquals(0,superviseProjectPage.getResearcherSelected());
-        superviseProjectPage.addResearcher(0); //Sappiamo essere Nicolò Zerman
+        superviseProjectPage.selectAndSaveResearcher(0); //Sappiamo essere Nicolò Zerman
         List<Researcher> listResearcherUpdated = projectRepository.findById(Long.parseLong(superviseProjectPage.getProjectId())).getResearchers();
 
         assertNotEquals(listResearcher,listResearcherUpdated);
@@ -311,28 +370,6 @@ public class SeleniumTest extends BaseTest {
         WorkingTime wt = wtRepository.getWorkingTimeByProjectAndUtenteAndDate(p,r,date);
         assertEquals(8,wt.getWorkedHours(),0);
         researcherPage.logout();
-    }
-
-    /*
-       L'amministratore accede ed elimina un supervisore
-    */
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    public void testDeleteSupervisor(){
-        driver.get("http://localhost:8080");
-        LoginPage loginPage = new LoginPage(driver);
-        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
-        ManageUsersPage manageUsersPage = administratorPage.manageUsers();
-
-        assertEquals(20,manageUsersPage.usersNumber());
-        manageUsersPage.deleteUser("tom");
-        assertEquals(19,manageUsersPage.usersNumber());
-
-        loginPage = manageUsersPage.logout();
-
-        ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        assertFalse(researcherPage.isThereProject("NeuroPlus")); //progetto il cui supervisore era il 15esimo
-        manageUsersPage.logout();
     }
 
     /*
@@ -418,7 +455,7 @@ public class SeleniumTest extends BaseTest {
      */
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    public void testInvalidUrlAdministratot(){
+    public void testInvalidUrlAdministrator(){
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
@@ -439,7 +476,6 @@ public class SeleniumTest extends BaseTest {
         administratorPage.logout();
     }
 
-
     /*
         L'amministratore accede e aggiunge un utente supervisore
      */
@@ -458,6 +494,21 @@ public class SeleniumTest extends BaseTest {
 
         assertEquals(21,manageUsersPage.usersNumber());
         manageUsersPage.logout();
+    }
+
+    /*
+        Viene testata la pagina di errore
+     */
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testErrorPage(){
+        driver.get("http://localhost:8080");
+        LoginPage loginPage = new LoginPage(driver);
+        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
+        
+        driver.get("http://localhost:8080/paginaInesistente");
+        ErrorPage errorPage = new ErrorPage(driver);
+        assertEquals("Oops! The page you're looking for doesn't exist.",errorPage.getErrorMessage());
     }
 
 }

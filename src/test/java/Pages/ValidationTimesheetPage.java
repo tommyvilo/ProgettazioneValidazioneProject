@@ -14,6 +14,9 @@ public class ValidationTimesheetPage extends PageObject {
     @FindBy(xpath="//td[@id='status']")
     private List<WebElement> status;
 
+    @FindBy(xpath="//td[@id='download']")
+    private List<WebElement> download;
+
     @FindBy(xpath="//td[@id='monthYear']")
     private List<WebElement> monthYears;
 
@@ -40,6 +43,10 @@ public class ValidationTimesheetPage extends PageObject {
             index++;
         }
         validateLink.get(index).click();
+    }
+
+    public void downloadTimesheet(int index){
+        download.get(index).click();
     }
 
     public String getStatusTimesheet(String monthYear){
