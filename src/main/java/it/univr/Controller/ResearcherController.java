@@ -11,7 +11,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,7 +73,7 @@ public class ResearcherController {
                                   @RequestParam(name="checkbox", required=false) String checkbox,
                                   @RequestParam(name="selectedDate", required=false) LocalDate date) {
         response.setHeader("Cache-Control","no-store");
-        String userType = "";
+        String userType;
         if(!ttController.isNotValidUrl("researcher",request)){
             userType = "researcher";
         }

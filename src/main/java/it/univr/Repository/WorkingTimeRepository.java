@@ -1,9 +1,7 @@
 package it.univr.Repository;
 
 import it.univr.Model.Project;
-import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Utente;
-import it.univr.Model.User.Researcher;
 import it.univr.Model.WorkingTime;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

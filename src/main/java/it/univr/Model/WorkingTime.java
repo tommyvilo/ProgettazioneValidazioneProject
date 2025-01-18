@@ -1,6 +1,5 @@
 package it.univr.Model;
 
-import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Utente;
 import jakarta.persistence.*;
 

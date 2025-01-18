@@ -1,6 +1,5 @@
 package Pages;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -25,9 +24,6 @@ public class SupervisorPage extends PageObject {
 
     @FindBy(xpath="//button[@id='saveButton']")
     private WebElement saveButton;
-
-    @FindBy(xpath="//input[@id='vacationCheckbox']")
-    private WebElement vacationCheckbox;
 
     @FindBy(xpath="//h1[@id='welcomeTitle']")
     private WebElement welcomeTitle;

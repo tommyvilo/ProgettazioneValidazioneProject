@@ -118,11 +118,12 @@ public class SupervisorController {
 
     @RequestMapping("/validationTimesheet")
     public String validationTimesheet(HttpServletRequest request, HttpServletResponse response, Model model, @RequestParam(name="id") long id) {
+        response.setHeader("Cache-Control","no-store");
+        Cookie cookie = ttController.getCookieByName(request,"userLoggedIn");
+
         if(ttController.isNotValidUrl("supervisor",request)){
             return "redirect:/";
         }
-        response.setHeader("Cache-Control","no-store");
-        Cookie cookie = ttController.getCookieByName(request,"userLoggedIn");
 
         assert cookie != null;
         Supervisor supervisor = (Supervisor) userRepository.findByUsername(cookie.getValue());

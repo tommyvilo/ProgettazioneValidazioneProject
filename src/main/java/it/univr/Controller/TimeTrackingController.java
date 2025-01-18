@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -752,7 +751,7 @@ public class TimeTrackingController {
         PdfPTable otherProjectTable = (PdfPTable) listaReturn.get(0);
         totalHoursPerDay = (Map<Integer,Double>) listaReturn.get(1);
 
-        listaReturn = leavesRow(totalDays,year,month,utente,project,totalHoursPerDay);;
+        listaReturn = leavesRow(totalDays,year,month,utente,project,totalHoursPerDay);
         PdfPTable leavesRow = (PdfPTable) listaReturn.get(0);
         totalHoursPerDay = (Map<Integer,Double>) listaReturn.get(1);
 

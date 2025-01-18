@@ -1,7 +1,6 @@
 package it.univr;
 
 import Pages.*;
-import it.univr.Controller.TimeTrackingController;
 import it.univr.Model.Project;
 import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Supervisor;
@@ -12,15 +11,9 @@ import it.univr.Repository.WorkingTimeRepository;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.sql.Time;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -37,9 +30,6 @@ public class SeleniumTest extends BaseTest {
 
     @Autowired
     private WorkingTimeRepository wtRepository;
-
-    @Autowired
-    private TimeTrackingController ttController;
 
     /*
         Il ricercatore inserisce le ore giornaliere, per poi salvarle
@@ -511,7 +501,7 @@ public class SeleniumTest extends BaseTest {
     public void testErrorPage(){
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
-        AdministratorPage administratorPage = (AdministratorPage) loginPage.login("admin","admin",userRepository);
+        loginPage.login("admin","admin",userRepository);
         
         driver.get("http://localhost:8080/paginaInesistente");
         ErrorPage errorPage = new ErrorPage(driver);

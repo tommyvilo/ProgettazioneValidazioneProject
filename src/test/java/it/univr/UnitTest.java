@@ -1,27 +1,17 @@
 package it.univr;
-import it.univr.Controller.AdministratorController;
-import it.univr.Controller.ResearcherController;
-import it.univr.Controller.SupervisorController;
 import it.univr.Controller.TimeTrackingController;
 import it.univr.Model.Project;
 import it.univr.Model.User.Administrator;
 import it.univr.Model.User.Researcher;
 import it.univr.Model.User.Supervisor;
-import it.univr.Model.User.Utente;
 import it.univr.Model.WorkingTime;
-import it.univr.Repository.ProjectRepository;
-import it.univr.Repository.UserRepository;
-import it.univr.Repository.WorkingTimeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -99,8 +89,8 @@ public class UnitTest {
         p.setSupervisor(s);
         assertEquals(p.getSupervisor(),s);
 
-        ArrayList<Researcher> researchers = new ArrayList<Researcher>();
-        p.setResearchers(new ArrayList<Researcher>());
+        ArrayList<Researcher> researchers = new ArrayList<>();
+        p.setResearchers(new ArrayList<>());
         p.addResearcher(r);
         researchers.add(r);
         assertEquals(researchers,p.getResearchers());
