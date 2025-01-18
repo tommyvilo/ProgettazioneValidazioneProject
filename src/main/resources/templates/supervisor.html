@@ -28,7 +28,7 @@
             <tr>
                 <th>TITLE</th>
                 <th>CUP</th>
-                <th>FUNDING AGENCY</th>
+                <th>UNIVERSITY</th>
                 <th>DAILY WORKING HOURS</th>
                 <th></th>
             </tr>
@@ -38,7 +38,7 @@
             <tr th:each="hour: ${hours}">
                 <td id="projectTitle" th:text="${hour.getProject().title}">Project Title</td>
                 <td th:text="${hour.getProject().cup}">CUP</td>
-                <td th:text="${hour.getProject().denominazioneSoggetto}">Funding Agency</td>
+                <td th:text="${hour.getProject().denominazioneSoggetto}">UNIVERSITY</td>
                 <td>
                     <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
                            th:disabled="${hour.getValidated() ? 'disabled' : null}" th:value="${hour.workedHours}" oninput="updateHours(this)">
@@ -60,6 +60,9 @@
     </div>
 
     <button style="margin-left: auto;margin-right: auto;"  class="save-button" id="saveButton" disabled>Salva ore lavorative</button>
+
+
+
 
 </form>
 
