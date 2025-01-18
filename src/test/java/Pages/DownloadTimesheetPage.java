@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class DownloadTimesheetPage extends PageObject {
     }
 
     public void downloadTimesheet(){
+        wait.until(ExpectedConditions.elementToBeClickable(download.get(0)));
         download.get(0).click();
     }
 
@@ -32,6 +34,7 @@ public class DownloadTimesheetPage extends PageObject {
         int index = 0;
         for(WebElement date : this.monthYears){
             if(date.getText().equals(monthYear)){
+                wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
                 download.get(index).click();
                 return true;
             }
@@ -41,11 +44,13 @@ public class DownloadTimesheetPage extends PageObject {
     }
 
     public String getWelcomeString(){
+        wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();
     }
 
 
     public LoginPage logout(){
+        wait.until(ExpectedConditions.elementToBeClickable(logoutButton));
         logoutButton.click();
         return new LoginPage(driver);
     }

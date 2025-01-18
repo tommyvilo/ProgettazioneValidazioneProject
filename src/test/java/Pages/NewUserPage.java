@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class NewUserPage extends PageObject {
 
@@ -32,6 +33,7 @@ public class NewUserPage extends PageObject {
     }
 
     public ManageUsersPage createUser(String username, String password, String name, String surname, String cf, String userType){
+        wait.until(ExpectedConditions.elementToBeClickable(submit));
         this.username.sendKeys(username);
         this.password.sendKeys(password);
         this.name.sendKeys(name);

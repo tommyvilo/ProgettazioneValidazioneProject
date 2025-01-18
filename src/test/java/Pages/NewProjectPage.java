@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class NewProjectPage extends PageObject {
 
@@ -35,6 +36,7 @@ public class NewProjectPage extends PageObject {
     }
 
     public ManageProjectPage createProject(String title, String cup, String code, String denominazioneSoggetto,String cfSoggetto, String supervisor){
+        wait.until(ExpectedConditions.elementToBeClickable(submit));
         this.title.sendKeys(title);
         this.cup.sendKeys(cup);
         this.code.sendKeys(code);
@@ -46,6 +48,7 @@ public class NewProjectPage extends PageObject {
     }
 
     public String getWelcomeString(){
+        wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();
     }
 

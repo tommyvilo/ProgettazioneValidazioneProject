@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class AdministratorPage extends PageObject {
 
@@ -23,11 +24,13 @@ public class AdministratorPage extends PageObject {
     }
 
     public ManageUsersPage manageUsers() {
+        wait.until(ExpectedConditions.elementToBeClickable(manageUser));
         manageUser.click();
         return new ManageUsersPage(driver);
     }
 
     public ManageProjectPage manageProjects() {
+        wait.until(ExpectedConditions.elementToBeClickable(manageProject));
         manageProject.click();
         return new ManageProjectPage(driver);
     }
@@ -38,11 +41,13 @@ public class AdministratorPage extends PageObject {
     }
 
     public LoginPage logout(){
+        wait.until(ExpectedConditions.elementToBeClickable(logoutButton));
         logoutButton.click();
         return new LoginPage(driver);
     }
 
     public String getWelcomeString(){
+        wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();
     }
 

@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -28,12 +29,15 @@ public class SuperviseProjectPage extends PageObject {
     }
 
     public void selectAndSaveResearcher(int index){
+        wait.until(ExpectedConditions.elementToBeClickable(researchers.get(index)));
         researchers.get(index).click();
+        wait.until(ExpectedConditions.elementToBeClickable(saveButton));
         saveButton.click();
     }
 
     public int getResearcherSelected(){
         int counter = 0;
+        wait.until(ExpectedConditions.visibilityOfAllElements(researchers));
         for (WebElement w: researchers){
             if (w.isSelected()){
                 counter++;
@@ -47,11 +51,12 @@ public class SuperviseProjectPage extends PageObject {
     }
 
     public String getWelcomeString(){
+        wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();
     }
 
-
     public LoginPage logout(){
+        wait.until(ExpectedConditions.elementToBeClickable(logoutButton));
         logoutButton.click();
         return new LoginPage(driver);
     }

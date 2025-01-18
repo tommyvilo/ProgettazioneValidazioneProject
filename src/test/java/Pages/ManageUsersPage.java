@@ -3,6 +3,7 @@ package Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class ManageUsersPage extends PageObject {
     }
 
     public NewUserPage newUser() {
+        wait.until(ExpectedConditions.elementToBeClickable(manageUser));
         manageUser.click();
         return new NewUserPage(driver);
     }
@@ -37,11 +39,13 @@ public class ManageUsersPage extends PageObject {
     }
 
     public void deleteUser(int index) {
+        wait.until(ExpectedConditions.elementToBeClickable(deleteUser.get(index)));
         deleteUser.get(index).click();
     }
 
     public void deleteUser(String username) {
         int index = 0;
+        wait.until(ExpectedConditions.visibilityOfAllElements(usernameUserList));
         for(WebElement user : usernameUserList) {
             if(user.getText().equals(username)) {
                 break;
@@ -52,11 +56,13 @@ public class ManageUsersPage extends PageObject {
     }
 
     public String getWelcomeString(){
+        wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();
     }
 
 
     public LoginPage logout(){
+        wait.until(ExpectedConditions.elementToBeClickable(logoutButton));
         logoutButton.click();
         return new LoginPage(driver);
     }
