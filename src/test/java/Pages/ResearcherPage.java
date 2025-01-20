@@ -49,7 +49,7 @@ public class ResearcherPage extends PageObject {
     public ResearcherPage setDate(String date){
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
-        titleList.get(0).click();
+        welcomeTitle.click();
         return new ResearcherPage(driver);
     }
 
