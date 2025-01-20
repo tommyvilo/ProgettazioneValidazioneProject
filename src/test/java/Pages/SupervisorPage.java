@@ -1,5 +1,6 @@
 package Pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -77,6 +78,9 @@ public class SupervisorPage extends PageObject {
     public SupervisorPage setDate(String date){
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
+
+        datePicker = driver.findElement(By.xpath("//input[@name='selectedDate']"));
+
         wait.until(ExpectedConditions.elementToBeClickable(datePicker));
         datePicker.click();
         return new SupervisorPage(driver);
