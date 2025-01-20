@@ -75,8 +75,9 @@ public class SupervisorPage extends PageObject {
     }
 
     public SupervisorPage setDate(String date){
-        wait.until(ExpectedConditions.elementToBeClickable(datePicker));
+        wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
+        wait.until(ExpectedConditions.elementToBeClickable(datePicker));
         datePicker.click();
         return new SupervisorPage(driver);
     }

@@ -47,8 +47,9 @@ public class ResearcherPage extends PageObject {
     }
 
     public ResearcherPage setDate(String date){
-        wait.until(ExpectedConditions.elementToBeClickable(datePicker));
+        wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
+        wait.until(ExpectedConditions.elementToBeClickable(datePicker));
         datePicker.click();
         return new ResearcherPage(driver);
     }
