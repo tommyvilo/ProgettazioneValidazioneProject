@@ -86,6 +86,7 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        researcherPage = researcherPage.setDate("2024-12-12");
         DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(1);
         downloadTimesheetPage.downloadTimesheet();
         downloadTimesheetPage.logout();
@@ -100,6 +101,7 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
+        supervisorPage = supervisorPage.setDate("2024-12-12");
         DownloadTimesheetPage downloadTimesheetPage = supervisorPage.downloadTimesheet(0);
         downloadTimesheetPage.downloadTimesheet();
         downloadTimesheetPage.logout();
@@ -277,6 +279,7 @@ public class SeleniumTest extends BaseTest {
         driver.get("http://localhost:8080");
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
+        researcherPage = researcherPage.setDate("2024-12-12");
         DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(0);
         assertFalse(downloadTimesheetPage.downloadTimesheet("12/2024"));
         researcherPage.logout();
