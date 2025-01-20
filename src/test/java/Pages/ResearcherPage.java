@@ -50,12 +50,6 @@ public class ResearcherPage extends PageObject {
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
         titleList.get(0).click();
-
-        /*wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@name='selectedDate']")));
-        datePicker = driver.findElement(By.xpath("//input[@name='selectedDate']"));
-
-        wait.until(ExpectedConditions.elementToBeClickable(datePicker));
-        datePicker.click();*/
         return new ResearcherPage(driver);
     }
 
