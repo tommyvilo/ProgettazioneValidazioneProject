@@ -212,5 +212,17 @@ a:hover {
 .disabled {
     opacity: 0.5;
     pointer-events: none;
+}
 
+.saveButtonDate{
+    padding: 7px 10px;
+    background-color: #49aff3;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.saveButtonDate:hover{
+    background-color: #3498db;
 }
