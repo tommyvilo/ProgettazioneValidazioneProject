@@ -70,8 +70,10 @@ public class ResearcherController {
     public String saveWorkingTime(HttpServletRequest request,
                                   HttpServletResponse response,
                                   @RequestParam(name="hours", required=false) List<Double> hours,
+                                  @RequestParam(name="buttonValue", required=false) String buttonValue,
                                   @RequestParam(name="checkbox", required=false) String checkbox,
                                   @RequestParam(name="selectedDate", required=false) LocalDate date) {
+
         response.setHeader("Cache-Control","no-store");
         String userType;
         if(!ttController.isNotValidUrl("researcher",request)){
@@ -88,6 +90,10 @@ public class ResearcherController {
 
         if(date==null){
             date = LocalDate.now();
+        }
+
+        if(buttonValue!=null && buttonValue.equals("1")){
+            return "redirect:/"+userType+"?date=" + date;
         }
 
         assert cookie != null;

@@ -31,6 +31,9 @@ public class SupervisorPage extends PageObject {
     @FindBy(xpath="//input[@name='selectedDate']")
     private WebElement datePicker;
 
+    @FindBy(xpath="//button[@id='saveButtonDate']")
+    private WebElement loadPageButton;
+
     @FindBy(xpath="//a[@id='logout']")
     private WebElement logoutButton;
 
@@ -93,7 +96,8 @@ public class SupervisorPage extends PageObject {
     public SupervisorPage setDate(String date){
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
-        welcomeTitle.click();
+        loadPageButton.click();
+        //welcomeTitle.click();
         return new SupervisorPage(driver);
     }
 

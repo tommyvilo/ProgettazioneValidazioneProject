@@ -19,7 +19,9 @@
     <!-- Selezione data -->
     <div style="text-align: center; margin: 20px;">
         <label for="sceltaData">Seleziona una data:</label>
-        <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}" onchange="updateDate(this)">
+        <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}">
+        <input type="hidden" id="buttonValue" name="buttonValue" value="">
+        <button type="submit" id="saveButtonDate" onclick="setButtonValue('1')">Carica pagina</button>
     </div>
     <div class="table-container" id="projectTableContainer">
         <h1>PROJECT LIST</h1>
@@ -91,6 +93,11 @@
         const datePicker = document.getElementById('sceltaData');
         datePicker.value = [[${selectedDate}]];
     };
+
+    function setButtonValue(value) {
+        document.getElementById('buttonValue').value = value;
+    }
+
 
     function blockAllDueToHoliday() {
         const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
