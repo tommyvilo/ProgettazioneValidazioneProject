@@ -64,6 +64,22 @@ public class SupervisorPage extends PageObject {
         return new DownloadTimesheetPage(driver);
     }
 
+    public DownloadTimesheetPage downloadTimesheet(String projectTitle){
+        wait.until(ExpectedConditions.visibilityOfAllElements(titleList));
+        int index = 0;
+        for(WebElement titleProject : titleList){
+            if(projectTitle.equals(titleProject.getText())){
+                wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
+                download.get(index).click();
+                return new DownloadTimesheetPage(driver);
+            }
+            index ++;
+        }
+        wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
+        download.get(index).click();
+        return new DownloadTimesheetPage(driver);
+    }
+
     public String getWelcomeString(){
         wait.until(ExpectedConditions.visibilityOf(welcomeTitle));
         return welcomeTitle.getText();

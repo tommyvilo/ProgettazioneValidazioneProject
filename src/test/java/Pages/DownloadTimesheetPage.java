@@ -25,7 +25,7 @@ public class DownloadTimesheetPage extends PageObject {
         super(driver);
     }
 
-    public void downloadTimesheet(){
+    public void downloadFirstTimesheet(){
         wait.until(ExpectedConditions.elementToBeClickable(download.get(0)));
         download.get(0).click();
     }

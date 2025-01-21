@@ -64,6 +64,22 @@ public class ResearcherPage extends PageObject {
         return new DownloadTimesheetPage(driver);
     }
 
+    public DownloadTimesheetPage downloadTimesheet(String projectTitle){
+        wait.until(ExpectedConditions.visibilityOfAllElements(titleList));
+        int index = 0;
+        for(WebElement titleProject : titleList){
+            if(projectTitle.equals(titleProject.getText())){
+                wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
+                download.get(index).click();
+                return new DownloadTimesheetPage(driver);
+            }
+            index ++;
+        }
+        wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
+        download.get(index).click();
+        return new DownloadTimesheetPage(driver);
+    }
+
     public void signVacation(){
         wait.until(ExpectedConditions.elementToBeClickable(vacationCheckbox));
         vacationCheckbox.click();

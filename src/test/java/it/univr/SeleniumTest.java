@@ -87,8 +87,8 @@ public class SeleniumTest extends BaseTest {
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
         researcherPage = researcherPage.setDate("2024-12-12");
-        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(1);
-        downloadTimesheetPage.downloadTimesheet();
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet("GreenTech");
+        downloadTimesheetPage.downloadFirstTimesheet();
         downloadTimesheetPage.logout();
     }
 
@@ -102,8 +102,8 @@ public class SeleniumTest extends BaseTest {
         LoginPage loginPage = new LoginPage(driver);
         SupervisorPage supervisorPage = (SupervisorPage) loginPage.login("tom","tom",userRepository);
         supervisorPage = supervisorPage.setDate("2024-12-12");
-        DownloadTimesheetPage downloadTimesheetPage = supervisorPage.downloadTimesheet(0);
-        downloadTimesheetPage.downloadTimesheet();
+        DownloadTimesheetPage downloadTimesheetPage = supervisorPage.downloadTimesheet("NeuroPlus");
+        downloadTimesheetPage.downloadFirstTimesheet();
         downloadTimesheetPage.logout();
     }
 
@@ -280,7 +280,7 @@ public class SeleniumTest extends BaseTest {
         LoginPage loginPage = new LoginPage(driver);
         ResearcherPage researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
         researcherPage = researcherPage.setDate("2024-12-12");
-        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet(0);
+        DownloadTimesheetPage downloadTimesheetPage = researcherPage.downloadTimesheet("NeuroPlus");
         assertFalse(downloadTimesheetPage.downloadTimesheet("12/2024"));
         researcherPage.logout();
 
@@ -293,7 +293,7 @@ public class SeleniumTest extends BaseTest {
         validationTimesheetPage.logout();
 
         researcherPage = (ResearcherPage) loginPage.login("mot","mot",userRepository);
-        downloadTimesheetPage = researcherPage.downloadTimesheet(0);
+        downloadTimesheetPage = researcherPage.downloadTimesheet("NeuroPlus");
         assertTrue(downloadTimesheetPage.downloadTimesheet("12/2024"));
         researcherPage.logout();
     }
