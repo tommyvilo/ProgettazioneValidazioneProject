@@ -53,19 +53,12 @@ public class ResearcherPage extends PageObject {
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
         loadPageButton.click();
-        //welcomeTitle.click();
         return new ResearcherPage(driver);
     }
 
     public String getProjectTitle(int index){
         wait.until(ExpectedConditions.visibilityOf(sliderList.get(index)));
         return titleList.get(index).getText();
-    }
-
-    public DownloadTimesheetPage downloadTimesheet(int index){
-        wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
-        download.get(index).click();
-        return new DownloadTimesheetPage(driver);
     }
 
     public DownloadTimesheetPage downloadTimesheet(String projectTitle){

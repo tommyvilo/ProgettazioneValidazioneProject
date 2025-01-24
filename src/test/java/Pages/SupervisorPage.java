@@ -61,12 +61,6 @@ public class SupervisorPage extends PageObject {
         return titleList.get(index).getText();
     }
 
-    public DownloadTimesheetPage downloadTimesheet(int index){
-        wait.until(ExpectedConditions.elementToBeClickable(download.get(index)));
-        download.get(index).click();
-        return new DownloadTimesheetPage(driver);
-    }
-
     public DownloadTimesheetPage downloadTimesheet(String projectTitle){
         wait.until(ExpectedConditions.visibilityOfAllElements(titleList));
         int index = 0;
@@ -97,7 +91,6 @@ public class SupervisorPage extends PageObject {
         wait.until(ExpectedConditions.visibilityOf(datePicker));
         datePicker.sendKeys(date);
         loadPageButton.click();
-        //welcomeTitle.click();
         return new SupervisorPage(driver);
     }
 
