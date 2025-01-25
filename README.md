@@ -14,7 +14,7 @@ Il sistema di **Time Tracking per Progetti Accademici** è una piattaforma svilu
 - **Amministratore (administrator)**: Utente che gestisce utenti (sia ricercatori che responsabili scientifici) e progetti
 - **Report (report)**: Documento che riporta la rendicontazione oraria mensile del ricercatore
 - **Firma (signature)**: Azione implicita eseguita quando il ricercatore segna e salva le ore lavorate giornalmente
-- **Controfirma (countersignature)**: responsabile scientifico che valida il timesheet mensile del ricercatore sul progetto
+- **Controfirma (countersignature)**: Responsabile scientifico che valida il timesheet mensile del ricercatore sul progetto
 
 
 ## Obiettivi del Sistema
@@ -56,7 +56,7 @@ Successivamente conferma la scelta.
 relative ai progetti a cui sta lavorando. Successivamente conferma la scelta.
 
 **5)** Il responsabile scientifico esegue con successo il login e si porta all'interno della pagina di gestione dei progetti. Poi seleziona un progetto 
-e aggiunge uno o piu ricercatori al progetto. Successivamente conferma la scelta.
+e aggiunge uno o più ricercatori al progetto. Successivamente conferma la scelta.
 
 **6)** Il responsabile scientifico esegue con successo il login e si porta all'interno della pagina di gestione dei progetti. Poi seleziona un progetto
 e valida il timesheet mensile di uno specifico ricercatore.
@@ -67,7 +67,7 @@ e valida il timesheet mensile di uno specifico ricercatore.
 
 ## Testing
 
-Effettuati con lo scopo di avere un high code coverage alto. (91% classes, 98% code lines)
+Effettuati con lo scopo di ottenere una copertura del codice (high code coverage) elevata. (91% classes, 98% code lines)
 
 ### Unit Test
 
@@ -129,7 +129,7 @@ L'amministratore accede e aggiunge un progetto.
 L'amministratore elimina un utente ricercatore.
 
 **_testDeleteSupervisor_**<br>
-L'amministratore ed elimina un responsabile scientifico.
+L'amministratore elimina un responsabile scientifico.
 
 **_testValidationAndDownload_**<br>
 Il ricercatore nota che non c'è un timesheet scaricabile. <br>
