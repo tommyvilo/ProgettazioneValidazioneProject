@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title th:text="'HomePage - ' + ${username}">HomePage - Administrator</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="/administrator.css">
+</head>
+
+<body>
+<div class="welcome-container">
+    <h1 id="welcomeTitle" >Welcome ADMINISTRATOR</h1>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
+</div>
+
+<div class="button-container">
+    <a id="manageUser" href="/manageUsers">Gestione Utenti</a>
+    <a id="manageProject" href="/manageProjects">Gestione Progetti</a>
+</div>
+</body>
+</html>

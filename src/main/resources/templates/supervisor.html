@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title th:text="'HomePage - ' + ${username}">HomePage - Supervisor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="/supervisor.css">
+</head>
+
+<body>
+<div class="welcome-container">
+    <h1 id="welcomeTitle">Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
+    <div class="button-container">
+        <a id="supervisorAction" href="/supervisorAction" class="supervisor-button">Supervisor Action</a>
+        <a id="logout" href="/logout" class="logout-button">Logout</a>
+    </div>
+</div>
+
+<form action="saveWorkingTime">
+    <!-- Selezione data -->
+    <div style="text-align: center; margin: 20px;">
+        <label for="sceltaData">Seleziona una data:</label>
+        <input type="date" id="sceltaData" name="selectedDate" th:value="${selectedDate}">
+        <input type="hidden" id="buttonValue" name="buttonValue" value="">
+        <button type="submit" class="saveButtonDate" id="saveButtonDate" onclick="setButtonValue('1')">Carica pagina</button>
+    </div>
+    <div class="table-container" id="projectTableContainer">
+        <h1>PROJECT LIST</h1>
+        <table>
+            <thead>
+            <tr>
+                <th>TITLE</th>
+                <th>CUP</th>
+                <th>UNIVERSITY</th>
+                <th>DAILY WORKING HOURS</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="hour: ${hours}">
+                <td id="projectTitle" th:text="${hour.getProject().title}">Project Title</td>
+                <td th:text="${hour.getProject().cup}">CUP</td>
+                <td th:text="${hour.getProject().denominazioneSoggetto}">UNIVERSITY</td>
+                <td>
+                    <input type="range" id="hours" name="hours" min="0" max="8" step="0.25"
+                           th:disabled="${hour.getValidated() ? 'disabled' : null}" th:value="${hour.workedHours}" oninput="updateHours(this)">
+                    <input type="hidden" name="hours" th:value="${hour.workedHours}" th:if="${hour.getValidated()}">
+                    <output th:text="${hour.getFormattedHours()}">1:00</output>
+                </td>
+                <td id="timesheetColumn"><a id="downloadTimesheet" th:href="@{downloadTimesheet(id=${hour.getProject().id})}">Download Timesheet</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- Checkbox per ferie sotto la tabella -->
+    <div style="text-align: center; margin: 20px;">
+        <label>
+            <input type="checkbox" name="checkbox" id="vacationCheckbox" disabled="disabled" th:checked="${status}" onchange="toggleVacationMode()"> Segna come giornata di ferie
+        </label>
+    </div>
+
+    <button style="margin-left: auto;margin-right: auto;"  class="save-button" id="saveButton" disabled>Salva ore lavorative</button>
+
+
+
+
+</form>
+
+<script th:inline="javascript">
+    let initialSliderValues = [];
+    let vacationMode = false;
+    let festivita = [[${isHoliday}]];
+    let status = Boolean(vacationMode = document.getElementById('vacationCheckbox').checked);
+    let statusSlider = []
+
+    window.onload = function() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        sliders.forEach(slider => {
+            initialSliderValues.push(parseFloat(slider.value));
+            statusSlider.push(slider.disabled);
+        });
+
+        if (festivita) {
+            blockAllDueToHoliday();
+        } else {
+            const vacationCheckbox = document.getElementById('vacationCheckbox');
+            vacationCheckbox.disabled = false;
+            toggleVacationMode();
+        }
+
+        const datePicker = document.getElementById('sceltaData');
+        datePicker.value = [[${selectedDate}]];
+    };
+
+    function setButtonValue(value) {
+        document.getElementById('buttonValue').value = value;
+    }
+
+
+    function blockAllDueToHoliday() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        sliders.forEach(slider => {
+            slider.disabled = true;
+        });
+
+        const saveButton = document.getElementById('saveButton');
+        saveButton.style.display = 'none';
+    }
+
+    function toggleVacationMode() {
+        vacationMode = Boolean(document.getElementById('vacationCheckbox').checked);
+
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        const saveButton = document.getElementById('saveButton');
+
+        if (vacationMode) {
+            if (status !== vacationMode) {
+                saveButton.classList.remove('disabled');
+                saveButton.textContent = 'Salva ore lavorative';
+                saveButton.disabled = false;
+                saveButton.style.display = 'block';
+            } else {
+                saveButton.style.display = 'none';
+            }
+
+            sliders.forEach(slider => {
+                slider.disabled = true;
+            });
+
+        } else {
+            let i = 0;
+            sliders.forEach(slider => {
+                slider.disabled = statusSlider[i];
+                if(slider.disabled){
+                    const vacationCheckbox = document.getElementById('vacationCheckbox');
+                    vacationCheckbox.disabled = true;
+                }
+                i = i + 1;
+            });
+
+            checkTotalHours();
+        }
+    }
+
+    function updateHours(slider) {
+        const value = parseFloat(slider.value);
+        const hours = Math.floor(value);
+        const minutes = Math.round((value - hours) * 60);
+        slider.nextElementSibling.value = `${hours}:${minutes.toString().padStart(2, '0')}`;
+        checkTotalHours();
+    }
+
+    function checkTotalHours() {
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        const saveButton = document.getElementById('saveButton');
+        let totalHours = 0;
+        let hasChanges = false;
+
+        sliders.forEach((slider, index) => {
+            const currentValue = parseFloat(slider.value);
+            totalHours += currentValue;
+
+            if (currentValue !== initialSliderValues[index]) {
+                hasChanges = true;
+            }
+        });
+
+        if (totalHours > 8) {
+            saveButton.classList.add('disabled');
+            saveButton.textContent = 'Errore: Ore lavorative totali giornaliere superate';
+            saveButton.disabled = true;
+            saveButton.style.display = 'block';
+        } else if (hasChanges && !vacationMode) {
+            saveButton.classList.remove('disabled');
+            saveButton.textContent = 'Salva ore lavorative';
+            saveButton.disabled = false;
+            saveButton.style.display = 'block';
+        } else {
+            saveButton.style.display = 'none';
+        }
+    }
+
+    function updateDate(dateInput) {
+        const selectedDate = dateInput.value; // Ottieni la data selezionata
+        if (selectedDate) {
+            // Reindirizza alla pagina researcher.html con il parametro della data
+            window.location.href = `/supervisor?date=${selectedDate}`;
+        }
+    }
+
+
+    document.getElementById('saveButton').addEventListener('click', function (event) {
+        // Abilita temporaneamente gli slider disabilitati
+        const sliders = document.querySelectorAll('input[type="range"][name="hours"]');
+        sliders.forEach(slider => {
+            if (slider.disabled) {
+                slider.disabled = false;
+                slider.setAttribute('data-temporarily-enabled', 'true'); // Aggiungi un attributo per identificarli
+            }
+        });
+
+        // Permetti l'invio del form
+        setTimeout(() => {
+            // Ripristina lo stato disabilitato per gli slider che erano originariamente disabilitati
+            sliders.forEach(slider => {
+                if (slider.getAttribute('data-temporarily-enabled') === 'true') {
+                    slider.disabled = true;
+                    slider.removeAttribute('data-temporarily-enabled');
+                }
+            });
+        }, 0);
+    });
+</script>
+
+</body>
+</html>

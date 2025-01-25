@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Create Project</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="/administrator.css">
+</head>
+
+<body>
+<div class="welcome-container">
+    <a href="/manageProjects" class="back-button">Go back</a>
+    <h1 id="welcomeTitle" >Welcome ADMINISTRATOR <span id="username" th:text="${username}">username</span></h1>
+    <a href="/logout" class="logout-button">Logout</a>
+</div>
+
+<div class="project-form-container">
+    <h2>Create New Project</h2>
+    <form action="/createProject" method="post">
+        <div class="form-group">
+            <label for="title">Project Title:</label>
+            <input type="text" id="title" name="title" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cup">CUP:</label>
+            <input type="text" id="cup" name="cup" required />
+        </div>
+
+        <div class="form-group">
+            <label for="code">Code:</label>
+            <input type="text" id="code" name="code" required />
+        </div>
+
+        <div class="form-group">
+            <label for="denominazioneSoggetto">Denominazione Soggetto:</label>
+            <input type="text" id="denominazioneSoggetto" name="denominazioneSoggetto" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cfSoggetto">CF Soggetto:</label>
+            <input type="text" id="cfSoggetto" name="cfSoggetto" required />
+        </div>
+
+        <div class="form-group">
+            <label for="supervisor">Supervisor:</label>
+            <select id="supervisor" name="supervisor" required>
+                <option value="" disabled selected>Select Supervisor</option>
+                <tr th:each="supervisor : ${supervisors}">
+                    <option th:value="${supervisor.id}" th:text="${supervisor.name} + ' ' + ${supervisor.surname}"></option>
+                </tr>
+            </select>
+        </div>
+
+        <button id="submit" type="submit" style="margin-right: auto; margin-left: auto;">Submit</button>
+    </form>
+</div>
+
+</body>
+</html>

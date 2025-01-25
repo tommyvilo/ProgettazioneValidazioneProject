@@ -1,0 +1,36 @@
+body {
+    background-color: #e8f1f8; /* Sfondo blu chiaro */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.error-container {
+    text-align: center;
+    padding: 50px;
+}
+
+h1 {
+    color: #003366; /* Blu scuro */
+    font-size: 3em;
+}
+
+p {
+    color: #003366;
+    font-size: 1.2em;
+}
+
+.button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    color: white;
+    background-color: #007bff; /* Blu brillante */
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: #0056b3; /* Blu più scuro */
+}

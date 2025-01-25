@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Validation Timesheet</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="/supervisor.css">
+</head>
+
+<body>
+<div class="welcome-container">
+    <a href="/supervisorAction" class="back-button">Go back</a>
+    <h1 id="welcomeTitle" >Welcome SUPERVISOR <span id="username" th:text="${username}">username</span></h1>
+    <a id="logout" href="/logout" class="logout-button">Logout</a>
+</div>
+
+<!-- Filtro per il Researcher -->
+<div class="filter-container">
+    <label for="researcherFilter">Filter by Researcher:</label>
+    <select id="researcherFilter" onchange="filterByResearcher()">
+        <option value="">All Researchers</option>
+        <option th:each="researcher: ${researchers}" th:value="${researcher.username}" th:text="${researcher.username}">Researcher 1</option>
+    </select>
+</div>
+
+<div class="table-container">
+    <h1>PROJECT LIST</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Researcher</th>
+            <th>Date</th>
+            <th>Project</th>
+            <th>Validated</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody id="timesheetRows">
+        <tr th:each="timesheet: ${workedMonthYear}" th:isValidated="${timesheet.getValidated()}" th:data-researcher="${timesheet.getUtente().username}">
+            <td th:text="${timesheet.getUtente().username}">10</td>
+            <td id="monthYear" th:text="${timesheet.getMonthYear()}">John</td>
+            <td th:text="${timesheet.getProject().title}">Smith</td>
+            <td id="status" th:text="${timesheet.getValidated()}">True</td>
+            <td><a id="validateLink" th:href="@{approveTimesheet(id=${timesheet.getId()})}" th:classappend="${timesheet.getValidated()} ? 'disabled-link' : ''">Validate it</a></td><td><a href="#">Modify Timesheet</a></td>
+            <td id="download"><a th:href="@{/downloadMonthlyTimesheet(idProject=${timesheet.getProject().getId()}, date=${timesheet.getMonthYear()}, user=${timesheet.getUtente().getUsername()})}">Download Timesheet</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+
+    // Funzione per filtrare la tabella in base al selezionato
+    function filterByResearcher() {
+        const selectedResearcher = document.getElementById("researcherFilter").value;
+        const rows = document.querySelectorAll("#timesheetRows tr");
+
+        // Ottieni il mese e l'anno attuali
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // i mesi sono indicizzati da 0 (0 = gennaio)
+        const currentYear = currentDate.getFullYear();
+
+        rows.forEach(row => {
+            const researcher = row.getAttribute("data-researcher");
+            if (selectedResearcher === "" || researcher === selectedResearcher) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+
+            // Estrai la data dalla riga e confrontala con la data attuale
+            const isValidated = row.getAttribute("isValidated")
+            const dateCell = row.querySelector("td:nth-child(2)"); // La seconda colonna contiene la data
+            const dateText = dateCell.textContent.trim();
+            const [month, year] = dateText.split("/"); // Supponiamo che la data sia nel formato MM/YYYY
+            const isCurrentMonthYear = (parseInt(month) === currentMonth && parseInt(year) === currentYear);
+
+            // Disabilita il link "Validate it" per le righe con data corrispondente al mese/anno attuali
+            const validateLink = row.querySelector("td:nth-child(5) a");
+            if (isCurrentMonthYear || isValidated === "true") {
+                validateLink.classList.add("disabled-link");
+                validateLink.style.pointerEvents = "none"; // Disabilita il clic
+            } else {
+                validateLink.classList.remove("disabled-link");
+                validateLink.style.pointerEvents = "auto"; // Rende di nuovo cliccabile
+            }
+        });
+    }
+    filterByResearcher();
+</script>
+
+</body>
+</html>
